@@ -21,7 +21,20 @@ from core.settings import KeyFrameIndexMilvusSetting, MongoDBSettings, AppSettin
 from factory.factory import ServiceFactory
 from core.logger import SimpleLogger
 
+from llama_index.llms.google_genai import GoogleGenAI
+from controller.agent_controller import AgentController
+from llama_index.core.llms import LLM
+
 logger = SimpleLogger(__name__)
+
+
+
+@lru_cache
+def get_llm() -> LLM:
+    return GoogleGenAI(
+        'gemini-2.5-flash-lite'
+    )
+
 
 
 
@@ -55,6 +68,30 @@ def get_service_factory(request: Request) -> ServiceFactory:
         )
     return service_factory
 
+
+@lru_cache
+def get_agent_controller(
+    service_factory = Depends(get_service_factory),
+    app_settings: AppSettings = Depends(get_app_settings)
+) -> AgentController:
+    from factory.factory import ServiceFactory
+    llm = get_llm()
+    keyframe_service = service_factory.get_keyframe_query_service()
+    model_service = service_factory.get_model_service()
+
+    data_folder = app_settings.DATA_FOLDER
+    objects_data_path = Path(app_settings.FRAME2OBJECT)
+    asr_data_path = Path(app_settings.ASR_PATH)
+
+    return AgentController(
+        llm=llm,
+        keyframe_service=keyframe_service,
+        model_service=model_service,
+        data_folder=data_folder,
+        objects_data_path=objects_data_path,
+        asr_data_path=asr_data_path,
+        top_k=50
+    )
 
 
 

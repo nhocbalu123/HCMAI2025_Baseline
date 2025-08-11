@@ -7,7 +7,7 @@ ROOT_DIR = os.path.abspath(
 )
 sys.path.insert(0, ROOT_DIR)
 
-from typing import Dict, List, cast
+from typing import List, cast
 from llama_index.core.llms import LLM
 
 from .agent import VisualEventExtractor, AnswerGenerator
@@ -15,7 +15,6 @@ from .agent import VisualEventExtractor, AnswerGenerator
 from service.search_service import KeyframeQueryService
 from service.model_service import ModelService
 from schema.response import KeyframeServiceReponse
-from functools import reduce
 
 
 
@@ -31,7 +30,7 @@ def apply_object_filter(
         
         target_objects_set = {obj.lower() for obj in target_objects}
         filtered_keyframes = []
-        
+
         for kf in keyframes:
             keyy = f"L{kf.group_num:02d}/V{kf.video_num:03d}/{kf.keyframe_num:08d}.webb"
             keyframe_objects = objects_data.get(keyy, [])
@@ -105,7 +104,6 @@ class KeyframeSearchAgent:
             if filtered_keyframes:  
                 final_keyframes = filtered_keyframes
         
-        group = final_keyframes[0].group_num
         
         smallest_kf = min(final_keyframes, key=lambda x: int(x.keyframe_num))
         max_kf = max(final_keyframes, key=lambda x: int(x.keyframe_num))

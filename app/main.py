@@ -7,7 +7,7 @@ import os
 sys.path.insert(0, os.path.dirname(__file__))
 
 
-from router import keyframe_api
+from router import keyframe_api, agent_api
 from core.lifespan import lifespan
 from core.logger import SimpleLogger
 
@@ -71,7 +71,7 @@ app.add_middleware(
 )
 
 app.include_router(keyframe_api.router, prefix="/api/v1")
-
+app.include_router(agent_api.router, prefix='/api/v1')
 
 @app.get("/", tags=["root"])
 async def root():
