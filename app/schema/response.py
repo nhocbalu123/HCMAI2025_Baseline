@@ -7,7 +7,7 @@ class KeyframeServiceReponse(BaseModel):
     group_num: int = Field(..., description="Group ID")
     keyframe_num: int = Field(..., description="Keyframe number")
     confidence_score: float = Field(..., description="Keyframe number")
-
+    
 
 
 class SingleKeyframeDisplay(BaseModel):
