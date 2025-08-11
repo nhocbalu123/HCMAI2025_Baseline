@@ -27,12 +27,16 @@ from llama_index.core.llms import LLM
 
 logger = SimpleLogger(__name__)
 
+from dotenv import load_dotenv
+load_dotenv()
+
 
 
 @lru_cache
 def get_llm() -> LLM:
     return GoogleGenAI(
-        'gemini-2.5-flash-lite'
+        'gemini-2.5-flash-lite',
+        api_key=os.getenv('GOOGLE_GENAI_API')
     )
 
 
@@ -69,12 +73,11 @@ def get_service_factory(request: Request) -> ServiceFactory:
     return service_factory
 
 
-@lru_cache
+
 def get_agent_controller(
     service_factory = Depends(get_service_factory),
     app_settings: AppSettings = Depends(get_app_settings)
 ) -> AgentController:
-    from factory.factory import ServiceFactory
     llm = get_llm()
     keyframe_service = service_factory.get_keyframe_query_service()
     model_service = service_factory.get_model_service()
@@ -178,7 +181,6 @@ def get_milvus_repository(service_factory: ServiceFactory = Depends(get_service_
 def get_query_controller(
     model_service: ModelService = Depends(get_model_service),
     keyframe_service: KeyframeQueryService = Depends(get_keyframe_service),
-    milvus_settings: KeyFrameIndexMilvusSetting = Depends(get_milvus_settings),
     app_settings: AppSettings = Depends(get_app_settings)
 ) -> QueryController:
     """Get query controller instance"""

@@ -28,7 +28,7 @@ class KeyframeQueryService:
 
     async def _retrieve_keyframes(self, ids: list[int]):
         keyframes = await self.keyframe_mongo_repo.get_keyframe_by_list_of_keys(ids)
-
+        print(keyframes[:5])
   
         keyframe_map = {k.key: k for k in keyframes}
         return_keyframe = [

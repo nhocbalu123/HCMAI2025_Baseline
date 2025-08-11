@@ -47,19 +47,19 @@ async def agent_search(
     
     logger.info(f"Agent query request: '{request.query}'")
     
-    try:
-        answer = await controller.search_and_answer(request.query)
-        
-        logger.info(f"Agent generated answer for query: '{request.query}'")
-        
-        return AgentQueryResponse(
-            query=request.query,
-            answer=answer
-        )
-        
-    except Exception as e:
-        logger.error(f"Error processing agent query '{request.query}': {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error processing query: {str(e)}"
-        )
+    # try:
+    answer = await controller.search_and_answer(request.query)
+    
+    logger.info(f"Agent generated answer for query: '{request.query}'")
+    
+    return AgentQueryResponse(
+        query=request.query,
+        answer=answer
+    )
+    
+    # except Exception as e:
+    #     logger.error(f"Error processing agent query '{request.query}': {str(e)}")
+    #     raise HTTPException(
+    #         status_code=500,
+    #         detail=f"Error processing query: {str(e)}"
+    #     )

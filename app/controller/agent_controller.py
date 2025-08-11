@@ -27,7 +27,7 @@ class AgentController:
         data_folder: str,
         objects_data_path: Optional[Path] = None,
         asr_data_path: Optional[Path] = None,
-        top_k: int = 50
+        top_k: int = 200
     ):
         
         objects_data = self._load_json_data(objects_data_path) if objects_data_path else {}
@@ -44,15 +44,7 @@ class AgentController:
         )
     
     def _load_json_data(self, path: Path):
-        try:
-            if path and path.exists():
-                with open(path, 'r') as f:
-                    data = json.load(f)
-
-                return {int(k): v for k, v in data.items()}
-        except Exception as e:
-            print(f"Warning: Could not load data from {path}: {e}")
-        return {}
+        return json.load(open(path))
 
 
 

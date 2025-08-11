@@ -121,24 +121,24 @@ class VisualEventExtractor:
     
 
     @staticmethod
-    def calculate_video_scores(keyframes: List[KeyframeServiceReponse]) -> List[Tuple[int, float, List[KeyframeServiceReponse]]]:
+    def calculate_video_scores(keyframes: List[KeyframeServiceReponse]) -> List[Tuple[float, List[KeyframeServiceReponse]]]:
         """
         Calculate average scores for each video and return sorted by score
         
         Returns:
             List of tuples: (video_num, average_score, keyframes_in_video)
         """
-        video_keyframes: Dict[int, List[KeyframeServiceReponse]] = defaultdict(list)
+        video_keyframes: Dict[str, List[KeyframeServiceReponse]] = defaultdict(list)
         
         for keyframe in keyframes:
-            video_keyframes[keyframe.video_num].append(keyframe)
+            video_keyframes[f"{keyframe.group_num}/{keyframe.video_num}"].append(keyframe)
         
-        video_scores: List[Tuple[int, float, List[KeyframeServiceReponse]]] = []
-        for video_num, video_keyframes_list in video_keyframes.items():
+        video_scores: List[Tuple[float, List[KeyframeServiceReponse]]] = []
+        for _, video_keyframes_list in video_keyframes.items():
             avg_score = sum(kf.confidence_score for kf in video_keyframes_list) / len(video_keyframes_list)
-            video_scores.append((video_num, avg_score, video_keyframes_list))
+            video_scores.append((avg_score, video_keyframes_list))
         
-        video_scores.sort(key=lambda x: x[1], reverse=True)
+        video_scores.sort(key=lambda x: x[0], reverse=True)
         
         return video_scores
     
@@ -175,7 +175,7 @@ class AnswerGenerator:
         original_query: str,
         final_keyframes: List[KeyframeServiceReponse],
         objects_data: Dict[str, List[str]],
-        asr_data: str
+        
     ):
         chat_messages = []
         for kf in final_keyframes:
@@ -203,11 +203,12 @@ class AnswerGenerator:
             )
 
             chat_messages.append(user_message)
+
         
         final_prompt = self.answer_prompt.format(
             query=original_query,
             keyframes_context="See the keyframes and their context above"
-        ) + f'\n\n ASR DATA: {asr_data}'
+        ) 
         query_message = ChatMessage(
             role=MessageRole.USER,
             content=[TextBlock(text=final_prompt)]
