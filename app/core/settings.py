@@ -1,7 +1,13 @@
 from pydantic_settings import BaseSettings
 from pydantic import Field
-from dotenv import load_dotenv
-load_dotenv()
+import os
+
+
+# if USE_ENV_FILE:
+#     from dotenv import load_dotenv
+
+#     load_dotenv()
+
 
 
 class MongoDBSettings(BaseSettings):
@@ -18,8 +24,8 @@ class IndexPathSettings(BaseSettings):
 
 class KeyFrameIndexMilvusSetting(BaseSettings):
     COLLECTION_NAME: str = "keyframe"
-    HOST: str = 'localhost'
-    PORT: str = '19530'
+    HOST: str = Field(..., alias="MILVUS_HOST")
+    PORT: int = Field(..., alias="MILVUS_PORT")
     METRIC_TYPE: str = 'COSINE'
     INDEX_TYPE: str = 'FLAT'
     BATCH_SIZE: int =10000

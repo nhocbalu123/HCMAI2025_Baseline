@@ -1,0 +1,10 @@
+Dockerfile
+docker-compose.yml
+.dockerignore
+.env.example
+.env
+.venv
+__pycache__/
+.mypy_cache
+migration_data/
+migration/
