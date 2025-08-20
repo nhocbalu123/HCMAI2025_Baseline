@@ -17,6 +17,7 @@ from service import KeyframeQueryService, ModelService
 from models.keyframe import Keyframe
 import open_clip
 from pymilvus import connections, Collection as MilvusCollection
+from app.core.settings import AppSettings
 
 
 class ServiceFactory:
@@ -28,7 +29,8 @@ class ServiceFactory:
         milvus_user: str ,
         milvus_password: str ,
         milvus_search_params: dict,
-        model_name: str ,
+        model_name: str,
+        app_setting: AppSettings,
         milvus_db_name: str = "default",
         milvus_alias: str = "default",
         mongo_collection=Keyframe,
@@ -44,6 +46,7 @@ class ServiceFactory:
             db_name=milvus_db_name,
             alias=milvus_alias
         )
+        self.app_setting = app_setting
 
         self._model_service = self._init_model_service(model_name)
 
@@ -82,7 +85,10 @@ class ServiceFactory:
         return KeyframeVectorRepository(collection=collection, search_params=search_params)
 
     def _init_model_service(self, model_name: str):
-        model, _, preprocess = open_clip.create_model_and_transforms(model_name)
+        model, _, preprocess = open_clip.create_model_and_transforms(
+            model_name=model_name,
+            pretrained=self.app_setting.PRETRAINED_NAME
+        )
         tokenizer = open_clip.get_tokenizer(model_name)
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         return ModelService(model=model, preprocess=preprocess, tokenizer=tokenizer, device=device)

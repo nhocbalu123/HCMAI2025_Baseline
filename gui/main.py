@@ -3,6 +3,17 @@ import requests
 import json
 from typing import List, Optional
 import pandas as pd
+from pathlib import Path
+
+
+def get_image_url(result_path: str) -> str:
+    path_parts = Path(result_path)
+    l_param = path_parts.parts[-3]
+    v_param = path_parts.parts[-2]
+    file_name = path_parts.name
+
+    # Construct the URL for the image
+    return f"{st.session_state.api_base_external_url}/api/v1/keyframe/image/{l_param}/{v_param}/{file_name}"
 
 # Page configuration
 st.set_page_config(
@@ -82,6 +93,7 @@ if 'search_results' not in st.session_state:
     st.session_state.search_results = []
 if 'api_base_url' not in st.session_state:
     st.session_state.api_base_url = "http://app:8000"
+    st.session_state.api_base_external_url = "http://localhost:8000"
 
 # Header
 st.markdown("""
@@ -267,7 +279,7 @@ if st.session_state.search_results:
             with col_img:
                 # Try to display image if path is accessible
                 try:
-                    st.image(result['path'], width=200, caption=f"Keyframe {i+1}")
+                    st.image(get_image_url(result_path=result["path"]), width=200, caption=f"Keyframe {i+1}")
                 except:
                     st.markdown(f"""
                     <div style="
@@ -292,7 +304,7 @@ if st.session_state.search_results:
                         <h4 style="margin: 0; color: #333;">Result #{i+1}</h4>
                         <span class="score-badge">Score: {result['score']:.3f}</span>
                     </div>
-                    <p style="margin: 0.5rem 0; color: #666;"><strong>Path:</strong> {result['path']}</p>
+                    <p style="margin: 0.5rem 0; color: #666;"><strong>Path:</strong> {get_image_url(result_path=result["path"])}</p>
                     <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-family: monospace; font-size: 0.9rem;">
                         {result['path'].split('/')[-1]}
                     </div>

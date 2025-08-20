@@ -15,8 +15,10 @@ if [ -f "$LOCK_FILE" ]; then
   exit 0
 fi
 
+echo "Run uv sync for installing new dependencies"
+uv sync --frozen --no-dev --compile-bytecode --python=/usr/local/bin/python3.12
 
-echo "Making migration_data/id2index.json file"
+echo "Making data_collection/converter/id2index.json file"
 python3 migration/quick_convert_id2index.py
 
 echo "Making migration_data/id2index.json successfully"
@@ -26,7 +28,10 @@ echo "---Starting embedding migration"
 python migration/embedding_migration.py --file_path "migration_data/CLIP_convnext_xxlarge_laion2B_s34B_b82K_augreg_soup_clip_embeddings.pt"
 
 echo "---Starting keyframe migration"
-python migration/keyframe_migration.py --file_path "migration_data/id2index.json"
+python migration/keyframe_migration.py --file_path "data_collection/converter/id2index.json"
+
+echo "---Predownload open-clip model's weight"
+python migration/download_open_clip_model.py
 
 touch $LOCK_FILE
 

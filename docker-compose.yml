@@ -1,46 +1,39 @@
+x-common-environment: &common-env
+  - MONGO_HOST=mongodb
+  - MONGO_PORT=27017
+  - MONGO_DB=mydatabase
+  - MONGO_USER=root
+  - MONGO_PASSWORD=example
+  - UVICORN_RELOAD=true
+  - UVICORN_LOG_LEVEL=debug
+  - MILVUS_HOST=milvus-standalone
+  - MILVUS_PORT=19530
+  - HF_HOME=./hf_cache
+
 services:
   app:
     container_name: rag_app_ctn
     image: hieudev89/rag_app
     restart: always
-    environment:
-      - MONGO_HOST=mongodb
-      - MONGO_PORT=27017
-      - MONGO_DB=mydatabase
-      - MONGO_USER=root
-      - MONGO_PASSWORD=example
-      - UVICORN_RELOAD=true
-      - UVICORN_LOG_LEVEL=debug
-      - MILVUS_HOST=milvus-standalone
-      - MILVUS_PORT=19530
-    command: >
-      sh -c "
-        echo 'Syncing dependencies...' &&
-        uv sync --frozen --no-dev --compile-bytecode --python=/usr/local/bin/python3.12 &&
-        echo 'Starting development server...' &&
-        python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-      "
-    # ports:
-    #   - 8000:8000
+    environment: *common-env
+    entrypoint: /app/app_entrypoint.sh
     volumes:
       - ./:/app
+      - ./hf_cache:/app/hf_cache
+    ports:
+      - 8000:8000
     depends_on:
-      - mongodb
-      - milvus
+      mongodb:
+        condition: service_healthy
+      milvus:
+        condition: service_healthy
+      app_migration:
+        condition: service_completed_successfully
 
   app_gui:
     container_name: app_gui_ctn
     image: hieudev89/rag_app
-    environment:
-      - MONGO_HOST=mongodb
-      - MONGO_PORT=27017
-      - MONGO_DB=mydatabase
-      - MONGO_USER=root
-      - MONGO_PASSWORD=example
-      - UVICORN_RELOAD=true
-      - UVICORN_LOG_LEVEL=debug
-      - MILVUS_HOST=milvus-standalone
-      - MILVUS_PORT=19530
+    environment: *common-env
     command: >
       sh -c "
         cd gui &&
@@ -49,30 +42,21 @@ services:
     ports:
       - 8501:8501
     volumes:
-      - ./:/app
+      - ./gui:/app/gui
     depends_on:
       - app
 
   app_migration:
     container_name: app_migration_ctn
     image: hieudev89/rag_app
-    environment:
-      - MONGO_HOST=mongodb
-      - MONGO_PORT=27017
-      - MONGO_DB=mydatabase
-      - MONGO_USER=root
-      - MONGO_PASSWORD=example
-      - UVICORN_RELOAD=true
-      - UVICORN_LOG_LEVEL=debug
-      - MILVUS_HOST=milvus-standalone
-      - MILVUS_PORT=19530
+    environment: *common-env
     command: ["/app/migration/app_migration.sh"]
-    # ports:
-    #   - 8000:8000
     volumes:
       - ./app:/app/app
       - ./migration:/app/migration
       - ./migration_data:/app/migration_data
+      - ./hf_cache:/app/hf_cache
+      - ./data_collection:/app/data_collection
 
   etcd:
     container_name: milvus-etcd
@@ -154,6 +138,12 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --eval 'db.runCommand({ ping: 1 }).ok'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
 volumes:
   etcd_data:

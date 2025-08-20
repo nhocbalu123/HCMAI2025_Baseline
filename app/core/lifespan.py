@@ -60,6 +60,8 @@ async def lifespan(app: FastAPI):
             "params": milvus_settings.SEARCH_PARAMS
         }
         
+        logger.info("Start initializing ServiceFactory ")
+
         service_factory = ServiceFactory(
             milvus_collection_name=milvus_settings.COLLECTION_NAME,
             milvus_host=milvus_settings.HOST,
@@ -68,6 +70,7 @@ async def lifespan(app: FastAPI):
             milvus_password="",  
             milvus_search_params=milvus_search_params,
             model_name=appsetting.MODEL_NAME,
+            app_setting=appsetting,
             mongo_collection=Keyframe
         )
         logger.info("Service factory initialized successfully")

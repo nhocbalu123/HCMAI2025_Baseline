@@ -26,6 +26,9 @@ def convert_global2imgpath(input_file: str, output_file: str):
         result[k] = f"{l_num}/{v_num}/{frame_num}"
 
     # Save to new file
+    file_path = Path(output_file)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    
     with open(output_file, "w") as f:
         json.dump(result, f, indent=2)
 

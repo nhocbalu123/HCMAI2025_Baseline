@@ -83,7 +83,8 @@ async def root():
         "version": "1.0.0",
         "docs": "/docs",
         "health": "/api/v1/keyframe/health",
-        "search": "/api/v1/keyframe/search"
+        "search": "/api/v1/keyframe/search",
+        "image": "/api/v1/keyframe/image"
     }
 
 

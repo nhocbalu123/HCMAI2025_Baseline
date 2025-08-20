@@ -1,6 +1,6 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from typing import List, Optional
 
 from schema.request import (
@@ -12,8 +12,12 @@ from schema.response import KeyframeServiceReponse, SingleKeyframeDisplay, Keyfr
 from controller.query_controller import QueryController
 from core.dependencies import get_query_controller
 from core.logger import SimpleLogger
+from core.settings import AppSettings
+
+from pathlib import Path
 
 
+IMAGE_DIR = Path(AppSettings().DATA_FOLDER)
 logger = SimpleLogger(__name__)
 
 
@@ -217,6 +221,14 @@ async def search_keyframes_selected_groups_videos(
     )
     return KeyframeDisplay(results=display_results)
 
-    
 
+@router.get("/image/{group_batch_id}/{video_batch_id}/{filename}")
+async def get_image(group_batch_id: str, video_batch_id: str, filename: str):
+    logger.info(f"KEYFRAME_BASE_DIR {IMAGE_DIR}")
+    image_path = IMAGE_DIR / group_batch_id / video_batch_id / filename
+    logger.info(f"IMAGE_PATH {image_path}")
+    if not image_path.is_file():
+        # Return a 404 Not Found error if the file doesn't exist
+        return {"error": f"Image not found {image_path}"}, 400
 
+    return FileResponse(image_path)
