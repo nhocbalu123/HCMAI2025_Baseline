@@ -6,14 +6,21 @@ import pandas as pd
 from pathlib import Path
 
 
-def get_image_url(result_path: str) -> str:
+def get_folder_path(result_path: str) -> str:
     path_parts = Path(result_path)
     l_param = path_parts.parts[-3]
     v_param = path_parts.parts[-2]
     file_name = path_parts.name
 
+    return f"{l_param}/{v_param}/{file_name}"
+
+
+def get_image_url(result_path: str) -> str:
+    file_path = get_folder_path(result_path=result_path)
+
     # Construct the URL for the image
-    return f"{st.session_state.api_base_external_url}/api/v1/keyframe/image/{l_param}/{v_param}/{file_name}"
+    return f"{st.session_state.api_base_external_url}/api/v1/keyframe/image/{file_path}"
+
 
 # Page configuration
 st.set_page_config(
@@ -272,46 +279,109 @@ if st.session_state.search_results:
     sorted_results = sorted(st.session_state.search_results, key=lambda x: x['score'], reverse=True)
     
     # Display results in a grid
-    for i, result in enumerate(sorted_results):
-        with st.container():
-            col_img, col_info = st.columns([1, 3])
-            
-            with col_img:
-                # Try to display image if path is accessible
-                try:
-                    st.image(get_image_url(result_path=result["path"]), width=200, caption=f"Keyframe {i+1}")
-                except:
-                    st.markdown(f"""
-                    <div style="
-                        background: #f0f0f0; 
-                        height: 150px; 
-                        border-radius: 10px; 
-                        display: flex; 
-                        align-items: center; 
-                        justify-content: center;
-                        border: 2px dashed #ccc;
-                    ">
-                        <div style="text-align: center; color: #666;">
-                            🖼️<br>Image Preview<br>Not Available
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-            
-            with col_info:
-                st.markdown(f"""
-                <div class="result-card">
-                    <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 0.5rem;">
-                        <h4 style="margin: 0; color: #333;">Result #{i+1}</h4>
-                        <span class="score-badge">Score: {result['score']:.3f}</span>
-                    </div>
-                    <p style="margin: 0.5rem 0; color: #666;"><strong>Path:</strong> {get_image_url(result_path=result["path"])}</p>
-                    <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-family: monospace; font-size: 0.9rem;">
-                        {result['path'].split('/')[-1]}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
+
+    import streamlit as st
+
+# ... your existing code to get sorted_results ...
+
+# Display results in a grid
+    if sorted_results:
+        st.markdown("""
+        <style>
+        .bordered-container {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 20px;
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        # You can change this number to adjust how many columns are in a row
+        cols_per_row = 4
         
-        st.markdown("<br>", unsafe_allow_html=True)
+        # Create the columns outside the loop
+        cols = st.columns(cols_per_row)
+        
+        for i, result in enumerate(sorted_results):
+            # Calculate the current column index
+            col_idx = i % cols_per_row
+            
+            with cols[col_idx]:
+                with st.container(border=True):
+                    caption_info = f"""
+                    <div style="text-align: left; margin-top: 0; margin-bottom: 1em;">
+                        <p style="margin-top:0; margin-bottom:0;"><b>Keyframe No.:</b> #{i+1}</p>
+                        <p style="margin-top:0; margin-bottom:0;"><b>Score:</b> {result['score']:.3f}</p>
+                        <p style="margin-top:0; margin-bottom:0;"><b>Origin Keyframe:</b> #{get_folder_path(result_path=result['path'])}</p>
+                    </div>
+                    """
+                    
+                    # Display the image with the formatted caption
+                    try:
+                        st.image(
+                            get_image_url(result_path=result["path"]),
+                            use_container_width=True
+                        )
+                        st.markdown(caption_info, unsafe_allow_html=True)
+                    except:
+                        st.markdown(f"""
+                        <div style="
+                            background: #f0f0f0; 
+                            height: 150px; 
+                            border-radius: 10px; 
+                            display: flex; 
+                            align-items: center; 
+                            justify-content: center;
+                            border: 2px dashed #ccc;
+                        ">
+                            <div style="text-align: center; color: #666;">
+                                🖼️<br>Image Preview<br>Not Available
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+
+    # for i, result in enumerate(sorted_results):
+    #     with st.container():
+    #         col_img, col_info = st.columns([1, 3])
+            
+    #         with col_img:
+    #             # Try to display image if path is accessible
+    #             try:
+    #                 st.image(get_image_url(result_path=result["path"]), width=200, caption=f"Keyframe {i+1}")
+    #             except:
+    #                 st.markdown(f"""
+    #                 <div style="
+    #                     background: #f0f0f0; 
+    #                     height: 150px; 
+    #                     border-radius: 10px; 
+    #                     display: flex; 
+    #                     align-items: center; 
+    #                     justify-content: center;
+    #                     border: 2px dashed #ccc;
+    #                 ">
+    #                     <div style="text-align: center; color: #666;">
+    #                         🖼️<br>Image Preview<br>Not Available
+    #                     </div>
+    #                 </div>
+    #                 """, unsafe_allow_html=True)
+            
+    #         with col_info:
+    #             st.markdown(f"""
+    #             <div class="result-card">
+    #                 <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 0.5rem;">
+    #                     <h4 style="margin: 0; color: #333;">Result #{i+1}</h4>
+    #                     <span class="score-badge">Score: {result['score']:.3f}</span>
+    #                 </div>
+    #                 <p style="margin: 0.5rem 0; color: #666;"><strong>Path:</strong> {get_image_url(result_path=result["path"])}</p>
+    #                 <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-family: monospace; font-size: 0.9rem;">
+    #                     {result['path'].split('/')[-1]}
+    #                 </div>
+    #             </div>
+    #             """, unsafe_allow_html=True)
+        
+    #     st.markdown("<br>", unsafe_allow_html=True)
 
 # Footer
 st.markdown("---")
