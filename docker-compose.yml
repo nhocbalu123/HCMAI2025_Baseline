@@ -19,6 +19,7 @@ services:
     entrypoint: /app/app_entrypoint.sh
     volumes:
       - ./:/app
+      - ./data_collection:/app/data_collection
       - ./hf_cache:/app/hf_cache
     ports:
       - 8000:8000

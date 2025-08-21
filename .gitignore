@@ -207,3 +207,4 @@ migration_data/
 data_collection/
 hf_cache/
 migration/.migration_locked
+.DS_Store

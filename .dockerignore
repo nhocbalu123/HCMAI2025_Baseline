@@ -3,8 +3,12 @@ docker-compose.yml
 .dockerignore
 .env.example
 .env
-.venv
+.DS_Store
+.venv/
 __pycache__/
-.mypy_cache
+.mypy_cache/
 migration_data/
 migration/
+hf_cache/
+.git/
+data_collection/

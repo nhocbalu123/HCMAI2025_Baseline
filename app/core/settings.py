@@ -1,6 +1,6 @@
 from pydantic_settings import BaseSettings
 from pydantic import Field
-import os
+# import os
 
 
 # if USE_ENV_FILE:
@@ -34,8 +34,7 @@ class KeyFrameIndexMilvusSetting(BaseSettings):
 class AppSettings(BaseSettings):
     DATA_FOLDER: str  = "/app/data_collection/keyframe"
     ID2INDEX_PATH: str = "/app/data_collection/converter/id2index.json"
-    MODEL_NAME: str = "convnext_xxlarge"
-    PRETRAINED_NAME: str = "laion2B-s34B-b82K-augreg-soup"
+    MODEL_NAME: str = "hf-hub:laion/CLIP-convnext_xxlarge-laion2B-s34B-b82K-augreg-soup"
     FRAME2OBJECT: str = '/app/data_collection/converter/detections.json'
     ASR_PATH: str = '/app/data_collection/converter/asr_proc.json'
 

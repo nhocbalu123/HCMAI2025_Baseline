@@ -1,6 +1,8 @@
 import os
 import sys
 import torch
+from pathlib import Path
+import shutil
 ROOT_DIR = os.path.abspath(
     os.path.join(
         os.path.dirname(__file__), '../'
@@ -30,7 +32,6 @@ class ServiceFactory:
         milvus_password: str ,
         milvus_search_params: dict,
         model_name: str,
-        app_setting: AppSettings,
         milvus_db_name: str = "default",
         milvus_alias: str = "default",
         mongo_collection=Keyframe,
@@ -46,7 +47,6 @@ class ServiceFactory:
             db_name=milvus_db_name,
             alias=milvus_alias
         )
-        self.app_setting = app_setting
 
         self._model_service = self._init_model_service(model_name)
 
@@ -83,13 +83,27 @@ class ServiceFactory:
         collection = MilvusCollection(collection_name, using=alias)
 
         return KeyframeVectorRepository(collection=collection, search_params=search_params)
+    
+    def _remove_hf_cache_locked(self):
+        cache_path = Path(os.getenv("HF_HOME"))
+        locks_dir = cache_path / ".locks"
+        if locks_dir.exists():
+            print("Removing .locks directory...")
+            shutil.rmtree(locks_dir)
+            print("✓ Removed lock files")
 
     def _init_model_service(self, model_name: str):
+        print("---Start loading model")
+        
+        self._remove_hf_cache_locked()
+
         model, _, preprocess = open_clip.create_model_and_transforms(
-            model_name=model_name,
-            pretrained=self.app_setting.PRETRAINED_NAME
+            model_name,
+            cache_dir=os.getenv("HF_HOME")
         )
+        print("---Start loading tokenizer")
         tokenizer = open_clip.get_tokenizer(model_name)
+        print("---End loading all")
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         return ModelService(model=model, preprocess=preprocess, tokenizer=tokenizer, device=device)
 
