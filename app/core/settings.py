@@ -1,7 +1,13 @@
 from pydantic_settings import BaseSettings
 from pydantic import Field
-from dotenv import load_dotenv
-load_dotenv()
+# import os
+
+
+# if USE_ENV_FILE:
+#     from dotenv import load_dotenv
+
+#     load_dotenv()
+
 
 
 class MongoDBSettings(BaseSettings):
@@ -18,18 +24,18 @@ class IndexPathSettings(BaseSettings):
 
 class KeyFrameIndexMilvusSetting(BaseSettings):
     COLLECTION_NAME: str = "keyframe"
-    HOST: str = 'localhost'
-    PORT: str = '19530'
+    HOST: str = Field(..., alias="MILVUS_HOST")
+    PORT: int = Field(..., alias="MILVUS_PORT")
     METRIC_TYPE: str = 'COSINE'
     INDEX_TYPE: str = 'FLAT'
     BATCH_SIZE: int =10000
     SEARCH_PARAMS: dict = {}
     
 class AppSettings(BaseSettings):
-    DATA_FOLDER: str  = "/media/tinhanhnguyen/Data3/Projects/HCMAI2025_Baseline/data/keyframe"
-    ID2INDEX_PATH: str = "/media/tinhanhnguyen/Data3/Projects/HCMAI2025_Baseline/data/id2index.json"
+    DATA_FOLDER: str  = "/app/data_collection/keyframe"
+    ID2INDEX_PATH: str = "/app/data_collection/converter/id2index.json"
     MODEL_NAME: str = "hf-hub:laion/CLIP-convnext_xxlarge-laion2B-s34B-b82K-augreg-soup"
-    FRAME2OBJECT: str = '/media/tinhanhnguyen/Data3/Projects/HCMAI2025_Baseline/app/data/detections.json'
-    ASR_PATH: str = '/media/tinhanhnguyen/Data3/Projects/HCMAI2025_Baseline/app/data/asr_proc.json'
+    FRAME2OBJECT: str = '/app/data_collection/converter/detections.json'
+    ASR_PATH: str = '/app/data_collection/converter/asr_proc.json'
 
 

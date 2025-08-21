@@ -12,7 +12,7 @@ ROOT_FOLDER = os.path.abspath(
 )
 sys.path.insert(0, ROOT_FOLDER)
 
-
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 from app.core.settings import KeyFrameIndexMilvusSetting
 
@@ -84,7 +84,11 @@ class MilvusEmbeddingInjector:
         batch_size: int = 10000,
     ):
         print(f"Loading embeddings from {embedding_file_path}")
-        embeddings = torch.load(embedding_file_path, weights_only=False)
+        embeddings = torch.load(
+            embedding_file_path,
+            weights_only=False,
+            map_location=DEVICE
+        )
         
         if isinstance(embeddings, torch.Tensor):
             embeddings = embeddings.cpu().numpy()
@@ -141,6 +145,9 @@ def inject_embeddings_simple(
     embedding_file_path: str,
     setting: KeyFrameIndexMilvusSetting
 ):
+    
+    print(setting.HOST)
+    
     injector = MilvusEmbeddingInjector(
         setting=setting,
         collection_name=setting.COLLECTION_NAME,
@@ -166,7 +173,8 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    setting =  KeyFrameIndexMilvusSetting()
+    setting = KeyFrameIndexMilvusSetting()
+
     inject_embeddings_simple(
         embedding_file_path=args.file_path,
         setting=setting

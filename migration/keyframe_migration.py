@@ -20,6 +20,9 @@ from app.models.keyframe import Keyframe
 SETTING = MongoDBSettings()
 
 async def init_db():
+    print("Mongo db connect")
+    print(SETTING.MONGO_HOST)
+    print(SETTING.MONGO_PORT)
     client = AsyncIOMotorClient(
         host=SETTING.MONGO_HOST,
         port=SETTING.MONGO_PORT,

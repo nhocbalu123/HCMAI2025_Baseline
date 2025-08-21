@@ -1,5 +1,8 @@
 import os
 import sys
+import torch
+from pathlib import Path
+import shutil
 ROOT_DIR = os.path.abspath(
     os.path.join(
         os.path.dirname(__file__), '../'
@@ -16,6 +19,7 @@ from service import KeyframeQueryService, ModelService
 from models.keyframe import Keyframe
 import open_clip
 from pymilvus import connections, Collection as MilvusCollection
+from app.core.settings import AppSettings
 
 
 class ServiceFactory:
@@ -27,7 +31,7 @@ class ServiceFactory:
         milvus_user: str ,
         milvus_password: str ,
         milvus_search_params: dict,
-        model_name: str ,
+        model_name: str,
         milvus_db_name: str = "default",
         milvus_alias: str = "default",
         mongo_collection=Keyframe,
@@ -79,11 +83,29 @@ class ServiceFactory:
         collection = MilvusCollection(collection_name, using=alias)
 
         return KeyframeVectorRepository(collection=collection, search_params=search_params)
+    
+    def _remove_hf_cache_locked(self):
+        cache_path = Path(os.getenv("HF_HOME"))
+        locks_dir = cache_path / ".locks"
+        if locks_dir.exists():
+            print("Removing .locks directory...")
+            shutil.rmtree(locks_dir)
+            print("✓ Removed lock files")
 
     def _init_model_service(self, model_name: str):
-        model, _, preprocess = open_clip.create_model_and_transforms(model_name)
+        print("---Start loading model")
+        
+        self._remove_hf_cache_locked()
+
+        model, _, preprocess = open_clip.create_model_and_transforms(
+            model_name,
+            cache_dir=os.getenv("HF_HOME")
+        )
+        print("---Start loading tokenizer")
         tokenizer = open_clip.get_tokenizer(model_name)
-        return ModelService(model=model, preprocess=preprocess, tokenizer=tokenizer)
+        print("---End loading all")
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        return ModelService(model=model, preprocess=preprocess, tokenizer=tokenizer, device=device)
 
     def get_mongo_keyframe_repo(self):
         return self._mongo_keyframe_repo
