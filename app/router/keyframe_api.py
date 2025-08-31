@@ -12,12 +12,12 @@ from schema.response import KeyframeServiceReponse, SingleKeyframeDisplay, Keyfr
 from controller.query_controller import QueryController
 from core.dependencies import get_query_controller
 from core.logger import SimpleLogger
-from core.settings import AppSettings
+from core.settings import ImageSettings
 
 from pathlib import Path
 
-
-IMAGE_DIR = Path(AppSettings().DATA_FOLDER)
+image_settings = ImageSettings()
+BASE_IMAGE_URL = image_settings.BASE_URL
 logger = SimpleLogger(__name__)
 
 
@@ -224,11 +224,7 @@ async def search_keyframes_selected_groups_videos(
 
 @router.get("/image/{group_batch_id}/{video_batch_id}/{filename}")
 async def get_image(group_batch_id: str, video_batch_id: str, filename: str):
-    logger.info(f"KEYFRAME_BASE_DIR {IMAGE_DIR}")
-    image_path = IMAGE_DIR / group_batch_id / video_batch_id / filename
-    logger.info(f"IMAGE_PATH {image_path}")
-    if not image_path.is_file():
-        # Return a 404 Not Found error if the file doesn't exist
-        return {"error": f"Image not found {image_path}"}, 400
+    image_url = f"{BASE_IMAGE_URL}/{group_batch_id}/{video_batch_id}/{filename}"
+    logger.info(f"Image URL: {image_url}")
 
-    return FileResponse(image_path)
+    return image_url

@@ -62,24 +62,25 @@ class KeyframeQueryService:
             filtered_results, key=lambda r: r.distance, reverse=True
         )
 
-        sorted_ids = [result.id_ for result in sorted_results]
+        # sorted_ids = [result.id_ for result in sorted_results]
 
-        keyframes = await self._retrieve_keyframes(sorted_ids)
+        # keyframes = await self._retrieve_keyframes(sorted_ids)
 
 
 
-        keyframe_map = {k.key: k for k in keyframes}
+        # keyframe_map = {k.key: k for k in keyframes}
         response = []
 
         for result in sorted_results:
-            keyframe = keyframe_map.get(result.id_) 
-            if keyframe is not None:
+            # keyframe = keyframe_map.get(result.id_)
+            if result.frame_id is not None:
                 response.append(
                     KeyframeServiceReponse(
-                        key=keyframe.key,
-                        video_num=keyframe.video_num,
-                        group_num=keyframe.group_num,
-                        keyframe_num=keyframe.keyframe_num,
+                        key=result.id_,
+                        video_num=result.video_namespace,
+                        group_num=result.parent_namespace,
+                        keyframe_num=result.frame_id,
+                        global_index=result.global_index,
                         confidence_score=result.distance
                     )
                 )

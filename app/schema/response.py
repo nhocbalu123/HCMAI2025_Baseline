@@ -6,7 +6,8 @@ class KeyframeServiceReponse(BaseModel):
     video_num: int = Field(..., description="Video ID")
     group_num: int = Field(..., description="Group ID")
     keyframe_num: int = Field(..., description="Keyframe number")
-    confidence_score: float = Field(..., description="Keyframe number")
+    confidence_score: float = Field(..., description="Keyframe number"),
+    global_index: int = Field(..., description="Global index for matching")
     
 
 
