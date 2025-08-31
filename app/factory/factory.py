@@ -160,7 +160,7 @@ class ServiceFactory:
             tokenizer = XLMRobertaTokenizer.from_pretrained("/app/checkpoints/beit3.spm")
 
             # load checkpoint
-            ckpt_path = os.path.join("app", "checkpoints", f"{model_name}.pth")
+            ckpt_path = os.path.join("/app", "checkpoints", "beit3_large_patch16_224.pth")
             if os.path.exists(ckpt_path):
                 print(f"--- Loading checkpoint from {ckpt_path}")
                 state = torch.load(ckpt_path, map_location=device)
