@@ -23,7 +23,7 @@ from app.core.settings import AppSettings
 
 from torchvision import transforms
 from transformers import XLMRobertaTokenizer
-from timm import create_model
+import timm
 from timm.data.constants import IMAGENET_INCEPTION_MEAN, IMAGENET_INCEPTION_STD
 
 
@@ -164,7 +164,13 @@ class ServiceFactory:
             if os.path.exists(ckpt_path):
                 print(f"--- Loading checkpoint from {ckpt_path}")
                 state = torch.load(ckpt_path, map_location=device)
-                model = create_model(model_name)
+                print("----create model")
+                model = timm.create_model(
+                    model_name="beit3_large_patch16_224",
+                    pretrained=True,
+                    num_classes=0
+                )
+                print("----load state dict")
                 missing, unexpected = model.load_state_dict(state['model'], strict=False)
 
                 if missing:
