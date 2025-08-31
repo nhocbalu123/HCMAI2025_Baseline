@@ -22,7 +22,7 @@ from app.core.settings import AppSettings
 # import timm
 
 from torchvision import transforms
-from transformers import XLMRobertaTokenizerFast
+from transformers import XLMRobertaTokenizer
 from timm import create_model
 from timm.data.constants import IMAGENET_INCEPTION_MEAN, IMAGENET_INCEPTION_STD
 
@@ -157,7 +157,7 @@ class ServiceFactory:
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             # tokenizer (BEiT-3 text pathway uses SentencePiece/BPE like XLM-R)
             print("--- Start loading tokenizer")
-            tokenizer = XLMRobertaTokenizerFast.from_pretrained("/app/checkpoints/beit3.spm")
+            tokenizer = XLMRobertaTokenizer.from_pretrained("/app/checkpoints/beit3.spm")
 
             # load checkpoint
             ckpt_path = os.path.join("app", "checkpoints", f"{model_name}.pth")
