@@ -227,4 +227,4 @@ async def get_image(group_batch_id: str, video_batch_id: str, filename: str):
     image_url = f"{BASE_IMAGE_URL}/{group_batch_id}/{video_batch_id}/{filename}"
     logger.info(f"Image URL: {image_url}")
 
-    return image_url
+    return FileResponse(image_url)

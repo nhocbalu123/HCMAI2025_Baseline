@@ -69,7 +69,7 @@ async def lifespan(app: FastAPI):
             milvus_user="",  
             milvus_password="",  
             milvus_search_params=milvus_search_params,
-            model_name="beit3_large_patch16_224",
+            model_name="beit3_large_patch16_384_retrieval",
             mongo_collection=Keyframe
         )
         logger.info("Service factory initialized successfully")

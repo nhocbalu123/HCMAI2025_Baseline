@@ -51,7 +51,6 @@ class KeyframeQueryService:
         )
 
         search_response = await self.keyframe_vector_repo.search_by_embedding(search_request)
-
         
         filtered_results = [
             result for result in search_response.results
@@ -81,7 +80,8 @@ class KeyframeQueryService:
                         group_num=result.parent_namespace,
                         keyframe_num=result.frame_id,
                         global_index=result.global_index,
-                        confidence_score=result.distance
+                        confidence_score=result.distance,
+                        frame_path=result.frame_path,
                     )
                 )
         return response

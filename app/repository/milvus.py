@@ -21,11 +21,6 @@ from pymilvus.client.search_result import SearchResult
 from schema.interface import  MilvusSearchRequest, MilvusSearchResult, MilvusSearchResponse
 
 
-
-
-
-
-
 class KeyframeVectorRepository(MilvusBaseRepository):
     
     OUTPUT_FIELDS = [
@@ -54,8 +49,6 @@ class KeyframeVectorRepository(MilvusBaseRepository):
         expr = None
         if request.exclude_ids:
             expr = f"id not in {request.exclude_ids}"
-        
-        output
 
         search_results= cast(SearchResult, self.collection.search(
             data=[request.embedding],
