@@ -11,10 +11,14 @@ make pre_setup
 2.1. Copy unilm into root project
 [Project Link](https://github.com/microsoft/unilm/tree/master)
 
-2.2. Download pretrained weighted for retrieval
+2.2. Download pretrained weights for retrieval
 [beit3_large_itc_patch16_224](https://github.com/addf400/files/releases/download/beit3/beit3_large_patch16_384_f30k_retrieval.pth)
 
-Then copy it to **/checkpoints**
+2.4. Download beit3.spm tokenizer
+
+[beit3.spm](https://github.com/addf400/files/releases/download/beit3/beit3.spm)
+
+Then copy pretrained weights and tokenizer to **/checkpoints**
 
 2.3. Download all keyframe embeddings:
 
