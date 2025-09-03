@@ -18,6 +18,9 @@ DOCKER_COMPOSE_FILE = docker-compose.yml
 HF_HOME = hf_cache
 HF_HOME_HUB = $(HF_HOME)/hub
 
+# Checkpoints and migration_data
+CHECKPOINTS = checkpoints
+MIGRATION_DATA = migration_data
 # Default target
 all: folders_setup permissions build up
 
@@ -31,6 +34,8 @@ folders_setup:
 	mkdir -p $(CONVERTER_DIR)
 	mkdir -p $(KEYFRAME_DIR)
 	mkdir -p $(HF_HOME)
+	mkdir -p $(CHECKPOINTS)
+	mkdir -p $(MIGRATION_DATA)
 	@echo "Directories created/ensured."
 
 ## Set Permissions
