@@ -222,7 +222,6 @@ class OptimizedFrameEmbeddingProcessor:
                 # Move to device
                 image_tensor = inputs['image'].to(self._device)
                 image_tensor = image_tensor.squeeze(0) # (C, H, W)
-                print(f"image_tensor shape: {image_tensor.shape}")
                 frame_id = self.extract_frame_id(frame_path)
                 
                 return image_tensor, frame_id, frame_path
@@ -257,7 +256,6 @@ class OptimizedFrameEmbeddingProcessor:
         
         # Stack tensors and move to device
         batch_tensor = torch.stack(frame_tensors).to(self._device)
-        print(f"generate_frame_embeddings_batch - {batch_tensor.shape}")
         with torch.no_grad():
             # TIMM models with num_classes=0 return features directly
             embeddings = self._model_service.encode_batch_images(batch_tensor)

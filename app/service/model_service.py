@@ -81,7 +81,6 @@ class ModelService:
             else:
                 raw_image = image
             
-            print("------Model Service Doing encoding")
             # Process image input
             inputs = self.preprocess.process(image=raw_image, text=None)
             
