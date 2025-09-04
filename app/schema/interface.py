@@ -21,6 +21,11 @@ class MilvusSearchResult(BaseModel):
     id_: int = Field(..., description="Primary key of the result")
     distance: float = Field(..., description="Distance/similarity score")
     embedding: Optional[List[float]] = Field(default=None, description="Original embedding vector")
+    global_index: Optional[int] = Field(default=None, description="Global index of embedding, it should be matched with id")
+    frame_id: Optional[str] = Field(default=None, description="Original frame id of video")
+    frame_path: Optional[str] = Field(default=None, description="Frame path of a keyframe")
+    parent_namespace: Optional[str] = Field(default=None, description="The video batch ID")
+    video_namespace: Optional[str] = Field(default=None, description="The video ID")
 
 
 class MilvusSearchResponse(BaseModel):

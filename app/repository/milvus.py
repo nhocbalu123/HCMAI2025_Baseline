@@ -21,12 +21,18 @@ from pymilvus.client.search_result import SearchResult
 from schema.interface import  MilvusSearchRequest, MilvusSearchResult, MilvusSearchResponse
 
 
-
-
-
-
-
 class KeyframeVectorRepository(MilvusBaseRepository):
+    
+    OUTPUT_FIELDS = [
+        "id",
+        "embedding",
+        "global_index",
+        "frame_id",
+        "frame_path",
+        "parent_namespace",
+        "video_namespace",
+    ]
+
     def __init__(
         self, 
         collection: MilvusCollection,
@@ -43,17 +49,16 @@ class KeyframeVectorRepository(MilvusBaseRepository):
         expr = None
         if request.exclude_ids:
             expr = f"id not in {request.exclude_ids}"
-        
+
         search_results= cast(SearchResult, self.collection.search(
             data=[request.embedding],
             anns_field="embedding",
             param=self.search_params,
             limit=request.top_k,
             expr=expr ,
-            output_fields=["id", "embedding"],
+            output_fields=KeyframeVectorRepository.OUTPUT_FIELDS,
             _async=False
         ))
-
 
         results = []
         for hits in search_results:
@@ -61,9 +66,15 @@ class KeyframeVectorRepository(MilvusBaseRepository):
                 result = MilvusSearchResult(
                     id_=hit.id,
                     distance=hit.distance,
-                    embedding=hit.entity.get("embedding") if hasattr(hit, 'entity') else None
+                    embedding=hit.entity.get("embedding", None),
+                    global_index=hit.entity.get("global_index", None),
+                    frame_id=hit.entity.get("frame_id", None),
+                    frame_path=hit.entity.get("frame_path", None),
+                    parent_namespace=hit.entity.get("parent_namespace", None),
+                    video_namespace=hit.entity.get("video_namespace", None)
                 )
                 results.append(result)
+
         
         return MilvusSearchResponse(
             results=results,
@@ -72,9 +83,3 @@ class KeyframeVectorRepository(MilvusBaseRepository):
     
     def get_all_id(self) -> list[int]:
         return list(range(self.collection.num_entities))
-
-
-
-    
-    
-

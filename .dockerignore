@@ -12,3 +12,4 @@ migration/
 hf_cache/
 .git/
 data_collection/
+checkpoints/

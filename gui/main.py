@@ -19,7 +19,8 @@ def get_image_url(result_path: str) -> str:
     file_path = get_folder_path(result_path=result_path)
 
     # Construct the URL for the image
-    return f"{st.session_state.api_base_external_url}/api/v1/keyframe/image/{file_path}"
+    # return f"{st.session_state.api_base_external_url}/api/v1/keyframe/image/{file_path}"
+    return f"https://pub-6dc786c2b53e460d9ef9948fd14a8a9a.r2.dev/{file_path}"
 
 
 # Page configuration

@@ -34,7 +34,8 @@ class QueryController:
         self,
         model: KeyframeServiceReponse
     ) -> tuple[str, float]:
-        return os.path.join(self.data_folder, f"L{model.group_num:02d}/V{model.video_num:03d}/{model.keyframe_num:08d}.webp"), model.confidence_score
+        # return os.path.join(self.data_folder, f"L{model.group_num:02d}/V{model.video_num:03d}/{model.keyframe_num:08d}.webp"), model.confidence_score
+        return os.path.join(self.data_folder, f"{model.group_num}/{model.video_num}/{model.keyframe_num}.webp"), model.confidence_score
     
         
     async def search_text(
@@ -43,7 +44,7 @@ class QueryController:
         top_k: int,
         score_threshold: float
     ):
-        embedding = self.model_service.embedding(query).tolist()[0]
+        embedding = self.model_service.embedding(query).tolist()
 
         result = await self.keyframe_service.search_by_text(embedding, top_k, score_threshold)
         return result
@@ -73,13 +74,13 @@ class QueryController:
         query: str,
         top_k: int,
         score_threshold: float,
-        list_of_include_groups: list[int]  ,
-        list_of_include_videos: list[int]  
+        list_of_include_groups: list[int],
+        list_of_include_videos: list[int]
     ):     
         
 
         exclude_ids = None
-        if len(list_of_include_groups) > 0   and len(list_of_include_videos) == 0:
+        if len(list_of_include_groups) > 0 and len(list_of_include_videos) == 0:
             print("hi")
             exclude_ids = [
                 int(k) for k, v in self.id2index.items()
@@ -102,8 +103,6 @@ class QueryController:
                     int(v.split('/')[1]) not in list_of_include_videos
                 )
             ]
-
-
 
         embedding = self.model_service.embedding(query).tolist()[0]
         result = await self.keyframe_service.search_by_text_exclude_ids(embedding, top_k, score_threshold, exclude_ids)
