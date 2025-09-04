@@ -63,7 +63,7 @@ class Processor():
             image = self.image_processor(image)
             image = image.unsqueeze(0)
         if text is not None:
-            language_tokens, padding_mask, _ = self.get_text_segment(text, max_len=256)
+            language_tokens, padding_mask, _ = self.get_text_segment(text, max_len=512)
         return {'image': image, 'text_description': language_tokens, 'padding_mask': padding_mask}
 
 

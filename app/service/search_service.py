@@ -129,35 +129,3 @@ class KeyframeQueryService:
         range_queries: a bunch of start end indices, and we just search inside these, ignore everything
         """
         return await self._search_keyframes(text_embedding, top_k, score_threshold, exclude_ids)   
-    
-
-
-    
-
-
-
-
-    
-        
-
-
-
-        
-
-        
-
-        
-        
-        
-
-
-        
-
-        
-
-
-
-
-
-
-
