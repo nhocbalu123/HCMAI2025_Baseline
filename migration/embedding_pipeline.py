@@ -1,3 +1,4 @@
+import argparse
 import timm
 import os
 import sys
@@ -752,10 +753,24 @@ class EmbeddingPipeline:
             uploader.upload_directory(f"{self._embedding_parent_namespace}/")
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run the embedding pipeline with a specified namespace.")
+
+    # Add the argument for parent_namespace
+    parser.add_argument(
+        '--parent_namespace',
+        type=str,
+        required=True,  # This line makes the argument mandatory
+        help="The parent namespace to use for the embedding pipeline."
+    )
+    args = parser.parse_args()
+    parent_namespace = args.parent_namespace
     embedding_pipeline = EmbeddingPipeline(
         model_name="beit3_large_patch16_384_retrieval",
-        parent_namespace="K01",
+        parent_namespace=parent_namespace,
         video_namespaces=None,
     )
 
     embedding_pipeline.perform()
+
+    # usage
+    # !python3 -m migration.embedding_pipeline --parent_namespace "K02"
