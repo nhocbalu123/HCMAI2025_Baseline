@@ -42,7 +42,7 @@ if "torch._six" not in sys.modules:
     six.zip = zip
     sys.modules["torch._six"] = six
 
-import modeling_finetune
+import unilm.beit3.modeling_finetune
 
 
 class Processor():
