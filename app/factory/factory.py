@@ -166,8 +166,8 @@ class ServiceFactory:
                 tokenizer = XLMRobertaTokenizer.from_pretrained(tokenizer_path)
                 print(f"✓ Loaded tokenizer from {tokenizer_path}")
             else:
-                print("⚠️  Using fallback tokenizer")
-                tokenizer = XLMRobertaTokenizer.from_pretrained("xlm-roberta-base")
+                raise("⚠️  /app/checkpoints/beit3.spm tokenizer")
+                
 
             # Create model with timm - THIS IS THE KEY CHANGE
             print(f"--- Creating model with timm: {model_name}")
@@ -196,7 +196,7 @@ class ServiceFactory:
                 #         num_classes=0,
                 #     )
                 # else:
-                    raise ValueError("No BEiT3 models available in timm")
+                raise ValueError("No BEiT3 models available in timm")
 
             # Load checkpoint
             ckpt_path = "/app/checkpoints/beit3_large_patch16_384_f30k_retrieval.pth"
@@ -243,8 +243,8 @@ class ServiceFactory:
             
             return ModelService(
                 model=model,
-                preprocess=processor, 
-                tokenizer=tokenizer, 
+                preprocess=processor,
+                tokenizer=tokenizer,
                 device=device
             )
 

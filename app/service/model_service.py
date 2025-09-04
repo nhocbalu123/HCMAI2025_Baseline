@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 from PIL import Image
+from pathlib import Path
 
 
 class ModelService:
@@ -9,7 +10,7 @@ class ModelService:
         model,
         preprocess,
         tokenizer,
-        device: str = 'cuda'
+        device = 'cuda'
     ):
         self.model = model
         self.model = model.to(device)
@@ -44,29 +45,12 @@ class ModelService:
             
             with torch.no_grad():
                 # Forward pass through BEiT3 model
-                if hasattr(self.model, 'forward') and 'only_infer' in self.model.forward.__code__.co_varnames:
-                    # Your current model interface
-                    _, text_feature = self.model(
-                        text_description=text_description,
-                        padding_mask=padding_mask,
-                        only_infer=True
-                    )
-                else:
-                    print("Alternative interface for BEiT3ForRetrieval")
-                    # outputs = self.model(
-                    #     textual_tokens=text_description,
-                    #     textual_attention_mask=(1 - padding_mask),  # Invert mask
-                    #     image=None
-                    # )
-                    # text_feature = outputs.text_embeds
-
-                    _, text_feature = self.model(
-                        text_description=text_description,
-                        padding_mask=padding_mask,
-                        only_infer=True
-                    )
-
-                    # raise "Alternative interface for BEiT3ForRetrieval"
+                # Your current model interface
+                _, text_feature = self.model(
+                    text_description=text_description,
+                    padding_mask=padding_mask,
+                    only_infer=True
+                )
             
             # Normalize the embedding
             text_feature = text_feature / text_feature.norm(dim=-1, keepdim=True)
@@ -97,6 +81,7 @@ class ModelService:
             else:
                 raw_image = image
             
+            print("------Model Service Doing encoding")
             # Process image input
             inputs = self.preprocess.process(image=raw_image, text=None)
             
@@ -105,20 +90,11 @@ class ModelService:
             
             with torch.no_grad():
                 # Forward pass through BEiT3 model
-                if hasattr(self.model, 'forward') and 'only_infer' in self.model.forward.__code__.co_varnames:
-                    # Your current model interface
-                    image_feature, _ = self.model(
-                        image=image_tensor,
-                        only_infer=True
-                    )
-                else:
-                    # Alternative interface for BEiT3ForRetrieval
-                    outputs = self.model(
-                        textual_tokens=None,
-                        textual_attention_mask=None,
-                        image=image_tensor
-                    )
-                    image_feature = outputs.image_embeds
+                # Your current model interface
+                image_feature, _ = self.model(
+                    image=image_tensor,
+                    only_infer=True
+                )
             
             # Normalize the embedding
             image_feature = image_feature / image_feature.norm(dim=-1, keepdim=True)
@@ -127,6 +103,40 @@ class ModelService:
             embedding = image_feature[0].cpu().numpy().astype(np.float32)
             
             return embedding
+            
+        except Exception as e:
+            print(f"Error in image embedding: {e}")
+            raise e
+    
+    def encode_batch_images(self, image_tensors) -> np.ndarray:
+        """
+        Generate image embedding using BEiT3
+        
+        Args:
+            image_tensors: batch image tensors
+            
+        Returns:
+            np.ndarray: Normalized image embedding (shape: [embedding_dim])
+        """
+        try:
+            # Handle image input
+            image_tensors = image_tensors.to(self.device)
+            
+            with torch.no_grad():
+                # Forward pass through BEiT3 model
+                # Your current model interface
+                image_features, _ = self.model(
+                    image=image_tensors,
+                    only_infer=True
+                )
+            
+            # Normalize the embedding
+            image_features = image_features / image_features.norm(dim=-1, keepdim=True)
+            
+            # Convert to numpy and return
+            embeddings = image_features.cpu().numpy()
+            
+            return embeddings
             
         except Exception as e:
             print(f"Error in image embedding: {e}")

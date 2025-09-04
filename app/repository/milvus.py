@@ -60,7 +60,6 @@ class KeyframeVectorRepository(MilvusBaseRepository):
             _async=False
         ))
 
-
         results = []
         for hits in search_results:
             for hit in hits:
@@ -75,6 +74,7 @@ class KeyframeVectorRepository(MilvusBaseRepository):
                     video_namespace=hit.entity.get("video_namespace", None)
                 )
                 results.append(result)
+
         
         return MilvusSearchResponse(
             results=results,
@@ -83,9 +83,3 @@ class KeyframeVectorRepository(MilvusBaseRepository):
     
     def get_all_id(self) -> list[int]:
         return list(range(self.collection.num_entities))
-
-
-
-    
-    
-

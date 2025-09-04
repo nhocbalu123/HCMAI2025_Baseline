@@ -43,4 +43,6 @@ dependencies = [
     "pycocotools",
     "pycocoevalcap",
     "torchscale>=0.3.0",
+    "faiss-cpu",
+    "minio"
 ]
