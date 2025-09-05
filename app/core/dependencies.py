@@ -19,6 +19,7 @@ from controller.query_controller import QueryController
 from service import ModelService, KeyframeQueryService
 from core.settings import KeyFrameIndexMilvusSetting, MongoDBSettings, AppSettings
 from factory.factory import ServiceFactory
+from service.translator_service import TranslatorService
 from core.logger import SimpleLogger
 
 from llama_index.llms.google_genai import GoogleGenAI
@@ -216,3 +217,15 @@ def get_query_controller(
             status_code=503,
             detail=f"Query controller initialization failed: {str(e)}"
         )
+
+
+def get_translator_service(request: Request) -> TranslatorService:
+    """Get TranslatorService from app state"""
+    translator_service = getattr(request.app.state, 'translator', None)
+    if translator_service is None:
+        logger.error("TranslatorService not found in app state")
+        raise HTTPException(
+            status_code=503, 
+            detail="TranslatorService not initialized. Please check application startup."
+        )
+    return translator_service

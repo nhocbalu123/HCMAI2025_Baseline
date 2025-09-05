@@ -19,6 +19,7 @@ from core.settings import MongoDBSettings, KeyFrameIndexMilvusSetting, AppSettin
 from models.keyframe import Keyframe
 from factory.factory import ServiceFactory
 from core.logger import SimpleLogger
+from service.translator_service import TranslatorService
 
 mongo_client: AsyncIOMotorClient = None
 service_factory: ServiceFactory = None
@@ -76,6 +77,7 @@ async def lifespan(app: FastAPI):
         
         app.state.service_factory = service_factory
         app.state.mongo_client = mongo_client
+        app.state.translator = TranslatorService()
         
         logger.info("Application startup completed successfully")
         
