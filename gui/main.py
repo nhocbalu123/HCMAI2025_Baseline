@@ -244,7 +244,7 @@ if st.button("🚀 Search", use_container_width=True):
                     endpoint,
                     json=payload,
                     headers={"Content-Type": "application/json"},
-                    timeout=30
+                    timeout=120
                 )
                 
                 if response.status_code == 200:
