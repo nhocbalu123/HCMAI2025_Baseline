@@ -771,15 +771,28 @@ if __name__ == "__main__":
         required=True,  # This line makes the argument mandatory
         help="The parent namespace to use for the embedding pipeline."
     )
+
+    parser.add_argument(
+        '--video_namespaces',
+        type=str,
+        required=False,  # This line makes the argument mandatory,
+        default=None,
+        help="The video namespaces to use for the embedding pipeline."
+    )
     args = parser.parse_args()
     parent_namespace = args.parent_namespace
+    video_namespaces = args.video_namespaces
+
+    if video_namespaces:
+        video_namespaces = video_namespaces.replace(" ", "").split(",")
+
     embedding_pipeline = EmbeddingPipeline(
         model_name="beit3_large_patch16_384_retrieval",
         parent_namespace=parent_namespace,
-        video_namespaces=None,
+        video_namespaces=video_namespaces,
     )
 
     embedding_pipeline.perform()
 
     # usage
-    # !python3 -m migration.embedding_pipeline --parent_namespace "K02"
+    # !python3 -m migration.embedding_pipeline --parent_namespace "L22_a" --video_namespaces "L22_V001,L22_V002"
