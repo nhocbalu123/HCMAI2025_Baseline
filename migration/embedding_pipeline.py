@@ -2,6 +2,7 @@ import argparse
 import timm
 import os
 import sys
+import shutil
 import torch
 from app.factory.factory import Processor
 from app.service.model_service import ModelService
@@ -727,6 +728,16 @@ class EmbeddingPipeline:
         self._num_workers = num_workers
 
     def perform(self):
+        with timeit_context("Cleanup before starting"):
+            if os.path.exists(self._embedding_parent_namespace):
+                try:
+                    shutil.rmtree(self._embedding_parent_namespace)
+                    print(f"Successfully removed directory: {self._embedding_parent_namespace}")
+                except OSError as e:
+                    print(f"Error: {e.filename} - {e.strerror}.")
+            else:
+                print(f"Directory not found: {self._embedding_parent_namespace}")
+
         with timeit_context("Initialize processor"):
             processor = OptimizedFrameEmbeddingProcessor(
                 model_name="beit3_large_patch16_384_retrieval",
