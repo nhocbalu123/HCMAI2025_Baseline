@@ -50,22 +50,20 @@ class QueryController:
         return result
 
 
-    async def search_text_with_exlude_group(
+    async def search_text_with_exclude_group(
         self,
         query: str,
         top_k: int,
         score_threshold: float,
-        list_group_exlude: list[int]
-    ):
-        exclude_ids = [
-            int(k) for k, v in self.id2index.items()
-            if int(v.split('/')[0]) in list_group_exlude
-        ]
-
-        
-        
-        embedding = self.model_service.embedding(query).tolist()[0]
-        result = await self.keyframe_service.search_by_text_exclude_ids(embedding, top_k, score_threshold, exclude_ids)
+        list_group_exlude: list[str]
+    ):        
+        embedding = self.model_service.embedding(query).tolist()
+        result = await self.keyframe_service.search_by_text_exclude_ids(
+            text_embedding=embedding,
+            top_k=top_k,
+            score_threshold=score_threshold,
+            exclude_groups=list_group_exlude
+        )
         return result
 
 
@@ -74,38 +72,19 @@ class QueryController:
         query: str,
         top_k: int,
         score_threshold: float,
-        list_of_include_groups: list[int],
-        list_of_include_videos: list[int]
-    ):     
-        
-
-        exclude_ids = None
-        if len(list_of_include_groups) > 0 and len(list_of_include_videos) == 0:
-            print("hi")
-            exclude_ids = [
-                int(k) for k, v in self.id2index.items()
-                if int(v.split('/')[0]) not in list_of_include_groups
-            ]
-        
-        elif len(list_of_include_groups) == 0   and len(list_of_include_videos) >0 :
-            exclude_ids = [
-                int(k) for k, v in self.id2index.items()
-                if int(v.split('/')[1]) not in list_of_include_videos
-            ]
-
-        elif len(list_of_include_groups) == 0  and len(list_of_include_videos) == 0 :
-            exclude_ids = []
-        else:
-            exclude_ids = [
-                int(k) for k, v in self.id2index.items()
-                if (
-                    int(v.split('/')[0]) not in list_of_include_groups or
-                    int(v.split('/')[1]) not in list_of_include_videos
-                )
-            ]
-
-        embedding = self.model_service.embedding(query).tolist()[0]
-        result = await self.keyframe_service.search_by_text_exclude_ids(embedding, top_k, score_threshold, exclude_ids)
+        list_of_include_groups: list[str],
+        list_of_include_videos: list[str]
+    ):
+        embedding = self.model_service.embedding(query).tolist()
+        result = await self.keyframe_service.search_by_text_include_ids(
+            text_embedding=embedding,
+            top_k=top_k,
+            score_threshold=score_threshold,
+            include_groups=list_of_include_groups,
+            include_videos=list_of_include_videos,
+            exclude_ids=None
+            
+        )
         return result
     
 

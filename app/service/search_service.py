@@ -41,12 +41,16 @@ class KeyframeQueryService:
         text_embedding: list[float],
         top_k: int,
         score_threshold: float | None = None,
-        exclude_indices: list[int] | None = None
+        include_groups: list[str] | None = None,
+        include_videos: list[str] | None = None,
+        exclude_indices: list[str] | None = None
     ) -> list[KeyframeServiceReponse]:
         
         search_request = MilvusSearchRequest(
             embedding=text_embedding,
             top_k=top_k,
+            include_groups=include_groups,
+            include_videos=include_videos,
             exclude_ids=exclude_indices
         )
 
@@ -116,16 +120,41 @@ class KeyframeQueryService:
         exclude_ids = [id_ for id_ in all_ids if id_ not in allowed_ids]
 
         return await self._search_keyframes(text_embedding, top_k, score_threshold, exclude_ids)   
-    
 
     async def search_by_text_exclude_ids(
         self,
         text_embedding: list[float],
         top_k: int,
         score_threshold: float | None,
-        exclude_ids: list[int] | None
+        exclude_groups: list[str] | None
     ):
         """
         range_queries: a bunch of start end indices, and we just search inside these, ignore everything
         """
-        return await self._search_keyframes(text_embedding, top_k, score_threshold, exclude_ids)   
+        return await self._search_keyframes(
+            text_embedding=text_embedding,
+            top_k=top_k,
+            score_threshold=score_threshold,
+            exclude_indices=exclude_groups
+        )
+
+    async def search_by_text_include_ids(
+        self,
+        text_embedding: list[float],
+        top_k: int,
+        score_threshold: float | None,
+        include_groups: list[str] | None,
+        include_videos: list[str] | None,
+        exclude_ids: list[str] | None
+    ):
+        """
+        range_queries: a bunch of start end indices, and we just search inside these, ignore everything
+        """
+        return await self._search_keyframes(
+            text_embedding=text_embedding,
+            top_k=top_k,
+            score_threshold=score_threshold,
+            include_groups=include_groups,
+            include_videos=include_videos,
+            exclude_indices=exclude_ids
+        ) 

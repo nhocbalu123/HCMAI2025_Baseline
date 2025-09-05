@@ -42,13 +42,33 @@ class KeyframeVectorRepository(MilvusBaseRepository):
         super().__init__(collection)
         self.search_params = search_params
     
+    def _build_expression(self, request: MilvusSearchRequest) -> str | None:
+        conditions = []
+        
+        # Exclude IDs
+        if request.exclude_ids:
+            conditions.append(f"parent_namespace not in {request.exclude_ids}")
+        
+        # Include specific parent namespaces
+        if hasattr(request, 'include_groups') and request.include_groups:
+            conditions.append(f"parent_namespace in {request.include_groups}")
+        
+        # Include specific video namespaces
+        if hasattr(request, 'include_videos') and request.include_videos:
+            conditions.append(f"video_namespace in {request.include_videos}")
+        
+        # Exclude specific parent namespaces
+        # if hasattr(request, 'exclude_parent_namespaces') and request.exclude_parent_namespaces:
+        #     conditions.append(f"parent_namespace not in {request.exclude_parent_namespaces}")
+        
+        # Join conditions with AND
+        return " and ".join(conditions) if conditions else None
+
     async def search_by_embedding(
         self,
         request: MilvusSearchRequest
     ):
-        expr = None
-        if request.exclude_ids:
-            expr = f"id not in {request.exclude_ids}"
+        expr = self._build_expression(request=request)
 
         search_results= cast(SearchResult, self.collection.search(
             data=[request.embedding],

@@ -13,7 +13,9 @@ class KeyframeInterface(BaseModel):
 class MilvusSearchRequest(BaseModel):
     embedding: List[float] = Field(..., description="Query embedding vector")
     top_k: int = Field(default=10, ge=1, le=1000, description="Number of top results to return")
-    exclude_ids: Optional[List[int]] = Field(default=None, description="IDs to exclude from search results")
+    include_groups: Optional[List[str]] = Field(default=None, description="List of group videos IDs for searching in Milvus")
+    include_videos: Optional[List[str]] = Field(default=None, description="List of videos IDs for searching in Milvus")
+    exclude_ids: Optional[List[str]] = Field(default=None, description="IDs to exclude from search results")
 
 
 class MilvusSearchResult(BaseModel):

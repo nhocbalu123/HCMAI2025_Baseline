@@ -160,10 +160,10 @@ if search_mode == "Exclude Groups":
     )
     
     # Parse exclude groups
-    exclude_groups = []
+    exclude_groups = ""
     if exclude_groups_input.strip():
         try:
-            exclude_groups = [int(x.strip()) for x in exclude_groups_input.split(',') if x.strip()]
+            exclude_groups = exclude_groups_input.strip()
         except ValueError:
             st.error("Please enter valid group IDs separated by commas")
 
@@ -186,18 +186,18 @@ elif search_mode == "Include Groups & Videos":
         )
     
     # Parse include groups and videos
-    include_groups = []
-    include_videos = []
+    include_groups = ""
+    include_videos = ""
     
     if include_groups_input.strip():
         try:
-            include_groups = [int(x.strip()) for x in include_groups_input.split(',') if x.strip()]
+            include_groups = include_groups_input.strip()
         except ValueError:
             st.error("Please enter valid group IDs separated by commas")
     
     if include_videos_input.strip():
         try:
-            include_videos = [int(x.strip()) for x in include_videos_input.split(',') if x.strip()]
+            include_videos = include_videos_input.strip()
         except ValueError:
             st.error("Please enter valid video IDs separated by commas")
 
@@ -236,6 +236,8 @@ if st.button("🚀 Search", use_container_width=True):
                         "include_groups": include_groups,
                         "include_videos": include_videos
                     }
+
+                    print("------payload: ", payload)
                 
 
                 response = requests.post(
