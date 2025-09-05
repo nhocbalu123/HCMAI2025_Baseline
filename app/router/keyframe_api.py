@@ -28,6 +28,13 @@ router = APIRouter(
 )
 
 
+def convert_string_as_list_to_list(string_as_list: str):
+    if len(string_as_list) > 0:
+        return [x.strip() for x in string_as_list.split(',') if x.strip()]
+
+    return []
+
+
 @router.post(
     "/search",
     response_model=KeyframeDisplay,
@@ -129,16 +136,16 @@ async def search_keyframes_exclude_groups(
 
     logger.info(f"Text search with group exclusion: query='{request.query}', exclude_groups={request.exclude_groups}")
     
-    results: list[KeyframeServiceReponse] = await controller.search_text_with_exlude_group(
+    results: list[KeyframeServiceReponse] = await controller.search_text_with_exclude_group(
         query=request.query,
         top_k=request.top_k,
         score_threshold=request.score_threshold,
-        list_group_exlude=request.exclude_groups
+        list_group_exlude=convert_string_as_list_to_list(
+            request.exclude_groups
+        )
     )
     
     logger.info(f"Found {len(results)} results excluding groups {request.exclude_groups}")\
-    
-    
 
     display_results = list(
         map(
@@ -207,8 +214,12 @@ async def search_keyframes_selected_groups_videos(
         query=request.query,
         top_k=request.top_k,
         score_threshold=request.score_threshold,
-        list_of_include_groups=request.include_groups,
-        list_of_include_videos=request.include_videos
+        list_of_include_groups=convert_string_as_list_to_list(
+            request.include_groups
+        ),
+        list_of_include_videos=convert_string_as_list_to_list(
+            request.include_videos
+        )
     )
     
     logger.info(f"Found {len(results)} results within selected groups/videos")

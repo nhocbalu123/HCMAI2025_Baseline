@@ -16,21 +16,21 @@ class TextSearchRequest(BaseSearchRequest):
 
 class TextSearchWithExcludeGroupsRequest(BaseSearchRequest):
     """Text search request with group exclusion"""
-    exclude_groups: List[int] = Field(
-        default_factory=list,
-        description="List of group IDs to exclude from search results",
+    exclude_groups: str = Field(
+        default_factory=str,
+        description="String of List of group IDs to exclude from search results",
     )
 
 
 class TextSearchWithSelectedGroupsAndVideosRequest(BaseSearchRequest):
     """Text search request with specific group and video selection"""
-    include_groups: List[int] = Field(
-        default_factory=list,
-        description="List of group IDs to include in search results",
+    include_groups: str = Field(
+        default_factory=str,
+        description="String of List of group IDs to include in search results",
     )
-    include_videos: List[int] = Field(
-        default_factory=list,
-        description="List of video IDs to include in search results",
+    include_videos: str = Field(
+        default_factory=str,
+        description="String of List of video IDs to include in search results",
     )
 
 
