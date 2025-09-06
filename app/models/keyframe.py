@@ -11,7 +11,3 @@ class Keyframe(Document):
 
     class Settings:
         name = "keyframes"
-
-
-
-    

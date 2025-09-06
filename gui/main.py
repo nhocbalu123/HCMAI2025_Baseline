@@ -135,11 +135,17 @@ with col1:
     )
     
     # Search parameters
-    col_param1, col_param2 = st.columns(2)
+    col_param1, col_param2, col_param3 = st.columns(3)
     with col_param1:
         top_k = st.slider("📊 Max Results", min_value=1, max_value=200, value=10)
     with col_param2:
         score_threshold = st.slider("🎯 Min Score", min_value=0.0, max_value=1.0, value=0.0, step=0.1)
+    with col_param3:
+        use_translator = st.checkbox(
+            "🌐 Use Translator",
+            value=False,
+            help="Enable translation for multilingual search queries"
+        )
 
 with col2:
     # Search mode selector
@@ -149,6 +155,7 @@ with col2:
         options=["Default", "Exclude Groups", "Include Groups & Videos"],
         help="Choose how to filter your search results"
     )
+
 
 # Mode-specific parameters
 if search_mode == "Exclude Groups":
@@ -215,7 +222,8 @@ if st.button("🚀 Search", use_container_width=True):
                     payload = {
                         "query": query,
                         "top_k": top_k,
-                        "score_threshold": score_threshold
+                        "score_threshold": score_threshold,
+                        "using_translator": use_translator
                     }
                 
                 elif search_mode == "Exclude Groups":
@@ -224,7 +232,8 @@ if st.button("🚀 Search", use_container_width=True):
                         "query": query,
                         "top_k": top_k,
                         "score_threshold": score_threshold,
-                        "exclude_groups": exclude_groups
+                        "exclude_groups": exclude_groups,
+                        "using_translator": use_translator
                     }
                 
                 else:  # Include Groups & Videos
@@ -234,10 +243,11 @@ if st.button("🚀 Search", use_container_width=True):
                         "top_k": top_k,
                         "score_threshold": score_threshold,
                         "include_groups": include_groups,
-                        "include_videos": include_videos
+                        "include_videos": include_videos,
+                        "using_translator": use_translator
                     }
 
-                    print("------payload: ", payload)
+                print("------payload: ", payload)
                 
 
                 response = requests.post(
