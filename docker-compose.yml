@@ -10,7 +10,6 @@ x-common-environment: &common-env
     - MILVUS_PORT=19530
     - HF_HOME=./hf_cache
     - GUI_REQUEST_TIMEOUT=120
-    - API_REQUEST_TIMEOUT=300
 
 services:
     app:
