@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import json
+import os
 from typing import List, Optional
 import pandas as pd
 from pathlib import Path
@@ -254,7 +255,7 @@ if st.button("🚀 Search", use_container_width=True):
                     endpoint,
                     json=payload,
                     headers={"Content-Type": "application/json"},
-                    timeout=30
+                    timeout=int(os.getenv('GUI_REQUEST_TIMEOUT', 120))
                 )
                 
                 if response.status_code == 200:

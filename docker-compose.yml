@@ -1,163 +1,167 @@
 x-common-environment: &common-env
-  - MONGO_HOST=mongodb
-  - MONGO_PORT=27017
-  - MONGO_DB=mydatabase
-  - MONGO_USER=root
-  - MONGO_PASSWORD=example
-  - UVICORN_RELOAD=true
-  - UVICORN_LOG_LEVEL=debug
-  - MILVUS_HOST=milvus-standalone
-  - MILVUS_PORT=19530
-  - HF_HOME=./hf_cache
+    - MONGO_HOST=mongodb
+    - MONGO_PORT=27017
+    - MONGO_DB=mydatabase
+    - MONGO_USER=root
+    - MONGO_PASSWORD=example
+    - UVICORN_RELOAD=true
+    - UVICORN_LOG_LEVEL=debug
+    - MILVUS_HOST=milvus-standalone
+    - MILVUS_PORT=19530
+    - HF_HOME=./hf_cache
+    - GUI_REQUEST_TIMEOUT=120
 
 services:
-  app:
-    container_name: rag_app_ctn
-    image: hieudev89/rag_app
-    restart: always
-    environment: *common-env
-    entrypoint: /app/app_entrypoint.sh
-    volumes:
-      - ./:/app
-      - ./data_collection:/app/data_collection
-      - ./hf_cache:/app/hf_cache
-      - ./checkpoints:/app/checkpoints
-    ports:
-      - 8000:8000
-    depends_on:
-      mongodb:
-        condition: service_healthy
-      milvus:
-        condition: service_healthy
-      app_migration:
-        condition: service_completed_successfully
+    app:
+        container_name: rag_app_ctn
+        image: hieudev89/rag_app
+        restart: always
+        environment: *common-env
+        entrypoint: /app/app_entrypoint.sh
+        volumes:
+            - ./:/app
+            - ./data_collection:/app/data_collection
+            - ./hf_cache:/app/hf_cache
+            - ./checkpoints:/app/checkpoints
+        ports:
+            - 8000:8000
+        depends_on:
+            mongodb:
+                condition: service_healthy
+            milvus:
+                condition: service_healthy
+            app_migration:
+                condition: service_completed_successfully
 
-  app_gui:
-    container_name: app_gui_ctn
-    image: hieudev89/rag_app
-    environment: *common-env
-    command: >
-      sh -c "
-        cd gui &&
-        streamlit run main.py
-      "
-    ports:
-      - 8501:8501
-    volumes:
-      - ./gui:/app/gui
-    depends_on:
-      - app
+    app_gui:
+        container_name: app_gui_ctn
+        image: hieudev89/rag_app
+        environment: *common-env
+        command: >
+            sh -c "
+              cd gui &&
+              streamlit run main.py
+            "
+        ports:
+            - 8501:8501
+        volumes:
+            - ./gui:/app/gui
+        depends_on:
+            - app
 
-  app_migration:
-    container_name: app_migration_ctn
-    image: hieudev89/rag_app
-    environment: *common-env
-      # CLOUDFLARE_S3_URL: "CLOUDFLARE_S3_URL",
-      # CLOUDFLARE_ACCESS_KEY_ID: "CLOUDFLARE_ACCESS_KEY_ID",
-      # CLOUDFLARE_SECRET_KEY: "CLOUDFLARE_SECRET_KEY",
-      # BUCKET_NAME: "BUCKET_NAME"
-    command: ["/app/migration/app_migration.sh"]
-    volumes:
-      - ./app:/app/app
-      - ./migration:/app/migration
-      - ./migration_data:/app/migration_data
-      - ./hf_cache:/app/hf_cache
-      - ./data_collection:/app/data_collection
+    app_migration:
+        container_name: app_migration_ctn
+        image: hieudev89/rag_app
+        environment:
+            *common-env
+            # CLOUDFLARE_S3_URL: "CLOUDFLARE_S3_URL",
+            # CLOUDFLARE_ACCESS_KEY_ID: "CLOUDFLARE_ACCESS_KEY_ID",
+            # CLOUDFLARE_SECRET_KEY: "CLOUDFLARE_SECRET_KEY",
+            # BUCKET_NAME: "BUCKET_NAME"
+        command: ["/app/migration/app_migration.sh"]
+        volumes:
+            - ./app:/app/app
+            - ./migration:/app/migration
+            - ./migration_data:/app/migration_data
+            - ./hf_cache:/app/hf_cache
+            - ./data_collection:/app/data_collection
 
-  etcd:
-    container_name: milvus-etcd
-    image: quay.io/coreos/etcd:v3.5.18
-    environment:
-      - ETCD_AUTO_COMPACTION_MODE=revision
-      - ETCD_AUTO_COMPACTION_RETENTION=1000
-      - ETCD_QUOTA_BACKEND_BYTES=4294967296
-      - ETCD_SNAPSHOT_COUNT=50000
-    volumes:
-      - etcd_data:/etcd
-    command: >
-      etcd
-      -advertise-client-urls=http://etcd:2379
-      -listen-client-urls=http://0.0.0.0:2379
-      --data-dir /etcd
-    healthcheck:
-      test: ["CMD", "etcdctl", "endpoint", "health"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
+    etcd:
+        container_name: milvus-etcd
+        image: quay.io/coreos/etcd:v3.5.18
+        environment:
+            - ETCD_AUTO_COMPACTION_MODE=revision
+            - ETCD_AUTO_COMPACTION_RETENTION=1000
+            - ETCD_QUOTA_BACKEND_BYTES=4294967296
+            - ETCD_SNAPSHOT_COUNT=50000
+        volumes:
+            - etcd_data:/etcd
+        command: >
+            etcd
+            -advertise-client-urls=http://etcd:2379
+            -listen-client-urls=http://0.0.0.0:2379
+            --data-dir /etcd
+        healthcheck:
+            test: ["CMD", "etcdctl", "endpoint", "health"]
+            interval: 30s
+            timeout: 20s
+            retries: 3
 
-  minio:
-    container_name: milvus-minio
-    image: minio/minio:RELEASE.2024-05-28T17-19-04Z
-    environment:
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    volumes:
-      - minio_data:/minio_data
-    command: server /minio_data --console-address ":9001"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
+    minio:
+        container_name: milvus-minio
+        image: minio/minio:RELEASE.2024-05-28T17-19-04Z
+        environment:
+            MINIO_ACCESS_KEY: minioadmin
+            MINIO_SECRET_KEY: minioadmin
+        ports:
+            - "9000:9000"
+            - "9001:9001"
+        volumes:
+            - minio_data:/minio_data
+        command: server /minio_data --console-address ":9001"
+        healthcheck:
+            test:
+                ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+            interval: 30s
+            timeout: 20s
+            retries: 3
 
-  milvus:
-    container_name: milvus-standalone
-    image: milvusdb/milvus:v2.5.14
-    command: ["milvus", "run", "standalone"]
-    security_opt:
-      - seccomp:unconfined
-    environment:
-      ETCD_ENDPOINTS: etcd:2379
-      MINIO_ADDRESS: minio:9000
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin
-      MINIO_BUCKET_NAME: milvus
-      MINIO_USE_SSL: "false"
-      MONGO_URI: mongodb://root:example@mongodb:27017
-    ports:
-      - "19530:19530"
-      - "9091:9091"
-    volumes:
-      - milvus_data:/var/lib/milvus
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
-      interval: 30s
-      start_period: 90s
-      timeout: 20s
-      retries: 3
-    depends_on:
-      - etcd
-      - minio
-      - mongodb
+    milvus:
+        container_name: milvus-standalone
+        image: milvusdb/milvus:v2.5.14
+        command: ["milvus", "run", "standalone"]
+        security_opt:
+            - seccomp:unconfined
+        environment:
+            ETCD_ENDPOINTS: etcd:2379
+            MINIO_ADDRESS: minio:9000
+            MINIO_ACCESS_KEY: minioadmin
+            MINIO_SECRET_KEY: minioadmin
+            MINIO_BUCKET_NAME: milvus
+            MINIO_USE_SSL: "false"
+            MONGO_URI: mongodb://root:example@mongodb:27017
+        ports:
+            - "19530:19530"
+            - "9091:9091"
+        volumes:
+            - milvus_data:/var/lib/milvus
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+            interval: 30s
+            start_period: 90s
+            timeout: 20s
+            retries: 3
+        depends_on:
+            - etcd
+            - minio
+            - mongodb
 
-  mongodb:
-    container_name: mongodb
-    image: mongo:latest
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-    healthcheck:
-      test: ["CMD-SHELL", "mongosh --eval 'db.runCommand({ ping: 1 }).ok'"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+    mongodb:
+        container_name: mongodb
+        image: mongo:latest
+        restart: unless-stopped
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: example
+        ports:
+            - "27017:27017"
+        volumes:
+            - mongodb_data:/data/db
+        healthcheck:
+            test:
+                ["CMD-SHELL", "mongosh --eval 'db.runCommand({ ping: 1 }).ok'"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
 
 volumes:
-  etcd_data:
-  minio_data:
-  milvus_data:
-  mongodb_data:
-  app_venv:
+    etcd_data:
+    minio_data:
+    milvus_data:
+    mongodb_data:
+    app_venv:
 
 networks:
-  default:
-    name: milvus
+    default:
+        name: milvus
