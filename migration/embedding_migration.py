@@ -139,7 +139,7 @@ class MilvusEmbeddingInjector:
         Optimized to build NumPy arrays in a single pass.
         """
         print(f"Loading embeddings from {embedding_file_path}")
-        embeddings = np.load(embedding_file_path)
+        embeddings = np.load(embedding_file_path, mmap_mode='r')
         metadata = np.load(metadata_file_path, allow_pickle=True).tolist()
 
         if embeddings.ndim == 1:
