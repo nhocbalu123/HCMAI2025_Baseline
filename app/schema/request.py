@@ -7,6 +7,7 @@ class BaseSearchRequest(BaseModel):
     query: str = Field(..., description="Search query text", min_length=1, max_length=1000)
     top_k: int = Field(default=10, ge=1, le=500, description="Number of top results to return")
     score_threshold: float = Field(default=0.0, ge=0.0, le=1.0, description="Minimum confidence score threshold")
+    using_translator: bool = Field(default=False, description="Using translator flag for triggering translation on query or not")
 
 
 class TextSearchRequest(BaseSearchRequest):
