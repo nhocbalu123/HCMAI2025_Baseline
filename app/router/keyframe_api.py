@@ -37,6 +37,17 @@ def convert_string_as_list_to_list(string_as_list: str):
     return []
 
 
+def compose_input_query(translator, request) -> str:
+    en_query = request.query  # same as input query, no translation
+
+    if request.using_translator:
+        en_query = translator.perform(request.query)
+        print(f"-------search query in vi: {request.query}")
+        print(f"-------search query in en: {en_query}")
+    
+    return en_query
+
+
 @router.post(
     "/search",
     response_model=KeyframeDisplay,
@@ -60,7 +71,8 @@ def convert_string_as_list_to_list(string_as_list: str):
     {
         "query": "person walking in the park",
         "top_k": 5,
-        "score_threshold": 0.7
+        "score_threshold": 0.7,
+        "using_translator": False
     }
     ```
     """,
@@ -74,19 +86,25 @@ async def search_keyframes(
     """
     Search for keyframes using text query with semantic similarity.
     """
-    
-    logger.info(f"Text search request: query='{request.query}', top_k={request.top_k}, threshold={request.score_threshold}")
-    
-    en_query = translator.perform(request.query)
-    print(f"-------search query in vi: {request.query}")
-    print(f"-------search query in en: {en_query}")
+
+    logger.info(
+        (
+            "Text search request: "
+            f"query='{request.query}', "
+            f"top_k={request.top_k}, "
+            f"threshold={request.score_threshold}, "
+            f"using_translator={request.using_translator}"
+        )
+    )
+
+    query = compose_input_query(translator=translator, request=request)
 
     results = await controller.search_text(
-        query=en_query,
+        query=query,
         top_k=request.top_k,
         score_threshold=request.score_threshold
     )
-    
+
     logger.info(f"Found {len(results)} results for query: '{request.query}'")
     display_results = list(
         map(
@@ -140,9 +158,11 @@ async def search_keyframes_exclude_groups(
     """
 
     logger.info(f"Text search with group exclusion: query='{request.query}', exclude_groups={request.exclude_groups}")
-    
+
+    query = compose_input_query(translator=translator, request=request)
+
     results: list[KeyframeServiceReponse] = await controller.search_text_with_exclude_group(
-        query=translator.perform(request.query),
+        query=query,
         top_k=request.top_k,
         score_threshold=request.score_threshold,
         list_group_exlude=convert_string_as_list_to_list(
@@ -159,10 +179,6 @@ async def search_keyframes_exclude_groups(
         )
     )
     return KeyframeDisplay(results=display_results)
-
-
-
-
 
 
 @router.post(
@@ -216,8 +232,10 @@ async def search_keyframes_selected_groups_videos(
 
     logger.info(f"Text search with selection: query='{request.query}', include_groups={request.include_groups}, include_videos={request.include_videos}")
     
+    query = compose_input_query(translator=translator, request=request)
+
     results = await controller.search_with_selected_video_group(
-        query=translator.perform(request.query),
+        query=query,
         top_k=request.top_k,
         score_threshold=request.score_threshold,
         list_of_include_groups=convert_string_as_list_to_list(
@@ -227,7 +245,7 @@ async def search_keyframes_selected_groups_videos(
             request.include_videos
         )
     )
-    
+
     logger.info(f"Found {len(results)} results within selected groups/videos")
 
     display_results = list(
