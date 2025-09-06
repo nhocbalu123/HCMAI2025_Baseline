@@ -58,6 +58,8 @@ services:
             # CLOUDFLARE_ACCESS_KEY_ID: "CLOUDFLARE_ACCESS_KEY_ID",
             # CLOUDFLARE_SECRET_KEY: "CLOUDFLARE_SECRET_KEY",
             # BUCKET_NAME: "BUCKET_NAME"
+        mem_limit: 8g
+        memswap_limit: 8g
         command: ["/app/migration/app_migration.sh"]
         volumes:
             - ./app:/app/app
