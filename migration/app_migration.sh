@@ -25,7 +25,7 @@ uv sync --frozen --no-dev --compile-bytecode --python=/usr/local/bin/python3.12
 
 echo "Starting app migration"
 echo "---Starting embedding migration"
-python migration/embedding_migration.py --emd-file-path "migration_data/combined_04092025-1757005847_embeddings.npy" --metadata-file-path "migration_data/combined_04092025-1757005847_metadata.npy"
+python migration/embedding_migration.py --emd-file-path "migration_data/combined_06092025-1757170013_embeddings.npy" --metadata-file-path "migration_data/combined_06092025-1757170013_metadata.npy"
 
 # echo "---Starting keyframe migration"
 # python migration/keyframe_migration.py --file_path "data_collection/converter/id2index.json"
