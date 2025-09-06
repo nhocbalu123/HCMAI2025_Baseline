@@ -77,19 +77,7 @@ async def lifespan(app: FastAPI):
         
         app.state.service_factory = service_factory
         app.state.mongo_client = mongo_client
-        
-        # Initialize translator service with error handling
-        try:
-            app.state.translator = TranslatorService()
-            logger.info("Translator service initialized successfully")
-        except Exception as e:
-            logger.error(f"Failed to initialize translator service: {e}")
-            # Create a dummy translator that just returns the original query
-            class DummyTranslator:
-                def perform(self, query):
-                    return query
-            app.state.translator = DummyTranslator()
-            logger.info("Using dummy translator service")
+        app.state.translator = TranslatorService()
         
         logger.info("Application startup completed successfully")
         
