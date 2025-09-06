@@ -1,5 +1,6 @@
 import os
 import sys
+import asyncio
 ROOT_DIR = os.path.abspath(
     os.path.join(
         os.path.dirname(__file__), '../'
@@ -13,6 +14,8 @@ from repository.milvus import MilvusSearchRequest
 from repository.mongo import KeyframeRepository
 
 from schema.response import KeyframeServiceReponse
+
+from service.ocr_service import OcrService
 
 class KeyframeQueryService:
     def __init__(
@@ -72,6 +75,21 @@ class KeyframeQueryService:
 
 
         # keyframe_map = {k.key: k for k in keyframes}
+        BASE_URL = "https://pub-6dc786c2b53e460d9ef9948fd14a8a9a.r2.dev/"
+        frame_paths = [f"{BASE_URL}{result.frame_path}" for result in sorted_results]
+        result_ids = [f"{BASE_URL}{result.id_}" for result in sorted_results]
+
+        if frame_paths:
+            print(f"Processing OCR for {len(frame_paths)} images using Tesseract...")
+            start_time = asyncio.get_event_loop().time()
+            ocr_service = OcrService()
+            ocr_results = ocr_service.process_urls_batch(urls=frame_paths)
+            end_time = asyncio.get_event_loop().time()
+            print(f"OCR processing completed in {end_time - start_time:.2f} seconds")
+        else:
+            ocr_results = [""] * len(sorted_results)
+        
+        dict_ocr_results = {r_id: ocr_text for r_id, ocr_text in ocr_results]}
         response = []
 
         for result in sorted_results:
@@ -86,6 +104,7 @@ class KeyframeQueryService:
                         global_index=result.global_index,
                         confidence_score=result.distance,
                         frame_path=result.frame_path,
+                        ocr_text=dict_ocr_results.get(result.id_, "")
                     )
                 )
         return response

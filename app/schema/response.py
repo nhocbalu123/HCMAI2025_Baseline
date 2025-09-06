@@ -9,6 +9,7 @@ class KeyframeServiceReponse(BaseModel):
     confidence_score: float = Field(..., description="Keyframe number"),
     global_index: int = Field(..., description="Global index for matching"),
     frame_path: str = Field(..., description="Frame Path"),
+    ocr_text: str = Field(default="", description="OCR Extraction")
     
 
 

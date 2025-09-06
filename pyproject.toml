@@ -45,4 +45,5 @@ dependencies = [
     "torchscale>=0.3.0",
     "minio",
     "google-genai",
+    "pytesseract"
 ]
