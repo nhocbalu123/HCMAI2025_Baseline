@@ -25,7 +25,7 @@ uv sync --frozen --no-dev --compile-bytecode --python=/usr/local/bin/python3.12
 
 echo "Starting app migration"
 echo "---Starting embedding migration"
-python migration/embedding_migration.py --emd-file-path "migration_data/combined_30082025-1756585172_embeddings.npy" --metadata-file-path "migration_data/combined_30082025-1756585172_metadata.npy"
+python migration/embedding_migration.py --emd-file-path "migration_data/combined_06092025-1757183324_embeddings.npy" --metadata-file-path "migration_data/combined_06092025-1757183324_metadata.npy"
 
 
 # echo "---Starting keyframe migration"
