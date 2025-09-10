@@ -10,6 +10,8 @@ x-common-environment: &common-env
     - MILVUS_PORT=19530
     - HF_HOME=./hf_cache
     - GUI_REQUEST_TIMEOUT=120
+    - USE_TRANSLATOR=False
+    # - GOOGLE_API_KEY= # USE_TRANSLATOR=True # set this key in your local if use translator
 
 services:
     app:
