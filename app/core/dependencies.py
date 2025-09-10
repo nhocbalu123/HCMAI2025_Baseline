@@ -223,9 +223,9 @@ def get_translator_service(request: Request) -> TranslatorService:
     """Get TranslatorService from app state"""
     translator_service = getattr(request.app.state, 'translator', None)
     if translator_service is None:
-        logger.error("TranslatorService not found in app state")
-        raise HTTPException(
-            status_code=503, 
-            detail="TranslatorService not initialized. Please check application startup."
-        )
+        logger.warning("TranslatorService not found in app state")
+        # raise HTTPException(
+        #     status_code=503, 
+        #     detail="TranslatorService not initialized. Please check application startup."
+        # )
     return translator_service
