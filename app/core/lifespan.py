@@ -77,7 +77,8 @@ async def lifespan(app: FastAPI):
         
         app.state.service_factory = service_factory
         app.state.mongo_client = mongo_client
-        app.state.translator = TranslatorService()
+        if os.getenv("USE_TRANSLATOR", "false").lower() == "true":
+            app.state.translator = TranslatorService()
         
         logger.info("Application startup completed successfully")
         

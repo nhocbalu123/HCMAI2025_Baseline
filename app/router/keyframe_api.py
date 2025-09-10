@@ -81,7 +81,7 @@ def compose_input_query(translator, request) -> str:
 async def search_keyframes(
     request: TextSearchRequest,
     controller: QueryController = Depends(get_query_controller),
-    translator: TranslatorService = Depends(get_translator_service)
+    translator: TranslatorService | None = Depends(get_translator_service)
 ):
     """
     Search for keyframes using text query with semantic similarity.
@@ -151,7 +151,7 @@ async def search_keyframes(
 async def search_keyframes_exclude_groups(
     request: TextSearchWithExcludeGroupsRequest,
     controller: QueryController = Depends(get_query_controller),
-    translator: TranslatorService = Depends(get_translator_service)
+    translator: TranslatorService | None = Depends(get_translator_service)
 ):
     """
     Search for keyframes with group exclusion filtering.
@@ -224,7 +224,7 @@ async def search_keyframes_exclude_groups(
 async def search_keyframes_selected_groups_videos(
     request: TextSearchWithSelectedGroupsAndVideosRequest,
     controller: QueryController = Depends(get_query_controller),
-    translator: TranslatorService = Depends(get_translator_service)
+    translator: TranslatorService | None = Depends(get_translator_service)
 ):
     """
     Search for keyframes within selected groups and videos.
