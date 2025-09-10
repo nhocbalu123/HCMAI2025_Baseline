@@ -19,7 +19,7 @@ services:
         image: hieudev89/rag_app
         restart: always
         environment: *common-env
-        entrypoint: /app/app_entrypoint.sh
+        entrypoint: /app/app_entrypoint_wins.sh
         volumes:
             - ./:/app
             - ./data_collection:/app/data_collection
@@ -62,7 +62,7 @@ services:
             # BUCKET_NAME: "BUCKET_NAME"
         mem_limit: 8g
         memswap_limit: 8g
-        command: ["/app/migration/app_migration.sh"]
+        command: ["/app/migration/app_migration_wins.sh"]
         volumes:
             - ./app:/app/app
             - ./migration:/app/migration
