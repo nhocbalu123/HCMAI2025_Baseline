@@ -99,16 +99,12 @@ class MilvusEmbeddingInjector:
         num_vectors, embedding_dim = embeddings.shape
         print(f"Loaded {num_vectors} embeddings with dimension {embedding_dim}")
         
-    
-        
         if utility.has_collection(self.collection_name, using=self.alias):
             print(f"Dropping existing collection '{self.collection_name}' before creation...")
             utility.drop_collection(self.collection_name, using=self.alias)
 
         collection = self.create_collection(embedding_dim)
      
-      
-        
         print(f"Inserting {num_vectors} embeddings in batches of {batch_size}")
         
         for i in tqdm(range(0, num_vectors, batch_size), desc="Inserting batches"):
@@ -157,9 +153,11 @@ class MilvusEmbeddingInjector:
         fields = [
             FieldSchema(name="id", dtype=DataType.INT64, is_primary=True, auto_id=False),
             FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=embedding_dim),
-            FieldSchema(name="parent_namespace", dtype=DataType.VARCHAR, max_length=255),
-            FieldSchema(name="video_namespace", dtype=DataType.VARCHAR, max_length=255),
-            FieldSchema(name="frame_id", dtype=DataType.VARCHAR, max_length=255),
+            FieldSchema(name="parent_namespace", dtype=DataType.VARCHAR, max_length=64),
+            FieldSchema(name="video_namespace", dtype=DataType.VARCHAR, max_length=64),
+            FieldSchema(name="fps", dtype=DataType.VARCHAR, max_length=16),
+            FieldSchema(name="frame_id", dtype=DataType.VARCHAR, max_length=128),
+            FieldSchema(name="pts_time", dtype=DataType.FLOAT),
             FieldSchema(name="frame_path", dtype=DataType.VARCHAR, max_length=1024),
             FieldSchema(name="video_frame_index", dtype=DataType.INT64),
             FieldSchema(name="global_index", dtype=DataType.INT64),
@@ -176,12 +174,14 @@ class MilvusEmbeddingInjector:
         print(f"Inserting {num_vectors} embeddings + metadata in batches of {batch_size}")
 
         # === Single-pass extraction of metadata ===
-        ids, parent, video, frame_id, frame_path, video_index, global_index = zip(*[
+        ids, parent, video, fps, frame_id, pts_time, frame_path, video_index, global_index = zip(*[
             (
                 m["global_index"],
                 m["parent_namespace"],
                 m["video_namespace"],
+                m["fps"],
                 m["frame_id"],
+                m["timestamp"],
                 m["frame_path"],
                 m["video_frame_index"],
                 m["global_index"],
@@ -192,7 +192,9 @@ class MilvusEmbeddingInjector:
         all_ids = np.array(ids, dtype=np.int64)
         all_parent = np.array(parent)
         all_video = np.array(video)
+        all_fps = np.array(fps)
         all_frame_id = np.array(frame_id)
+        all_pts_time = np.array(pts_time, dtype=np.float16)
         all_frame_path = np.array(frame_path)
         all_video_index = np.array(video_index, dtype=np.int64)
         all_global_index = np.array(global_index, dtype=np.int64)
@@ -209,7 +211,9 @@ class MilvusEmbeddingInjector:
                 batch_embeddings,
                 all_parent[i:end_idx].tolist(),
                 all_video[i:end_idx].tolist(),
+                all_fps[i:end_idx].tolist(),
                 all_frame_id[i:end_idx].tolist(),
+                all_pts_time[i:end_idx].tolist(),
                 all_frame_path[i:end_idx].tolist(),
                 all_video_index[i:end_idx].tolist(),
                 all_global_index[i:end_idx].tolist(),

@@ -88,7 +88,9 @@ class KeyframeVectorRepository(MilvusBaseRepository):
                     distance=hit.distance,
                     embedding=hit.entity.get("embedding", None),
                     global_index=hit.entity.get("global_index", None),
+                    fps=hit.entity.get("fps", None),
                     frame_id=hit.entity.get("frame_id", None),
+                    pts_time=hit.entity.get("pts_time", None),
                     frame_path=hit.entity.get("frame_path", None),
                     parent_namespace=hit.entity.get("parent_namespace", None),
                     video_namespace=hit.entity.get("video_namespace", None)

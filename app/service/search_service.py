@@ -11,25 +11,22 @@ sys.path.insert(0, ROOT_DIR)
 from repository.milvus import KeyframeVectorRepository
 from repository.milvus import MilvusSearchRequest
 from repository.mongo import KeyframeRepository
-
 from schema.response import KeyframeServiceReponse
+
 
 class KeyframeQueryService:
     def __init__(
             self, 
             keyframe_vector_repo: KeyframeVectorRepository,
             keyframe_mongo_repo: KeyframeRepository,
-            
-        ):
-
+    ):
         self.keyframe_vector_repo = keyframe_vector_repo
         self.keyframe_mongo_repo= keyframe_mongo_repo
 
 
     async def _retrieve_keyframes(self, ids: list[int]):
         keyframes = await self.keyframe_mongo_repo.get_keyframe_by_list_of_keys(ids)
-        print(keyframes[:5])
-  
+
         keyframe_map = {k.key: k for k in keyframes}
         return_keyframe = [
             keyframe_map[k] for k in ids
@@ -45,7 +42,6 @@ class KeyframeQueryService:
         include_videos: list[str] | None = None,
         exclude_indices: list[str] | None = None
     ) -> list[KeyframeServiceReponse]:
-        
         search_request = MilvusSearchRequest(
             embedding=text_embedding,
             top_k=top_k,
@@ -55,7 +51,7 @@ class KeyframeQueryService:
         )
 
         search_response = await self.keyframe_vector_repo.search_by_embedding(search_request)
-        
+
         filtered_results = [
             result for result in search_response.results
             if score_threshold is None or result.distance > score_threshold
@@ -69,8 +65,6 @@ class KeyframeQueryService:
 
         # keyframes = await self._retrieve_keyframes(sorted_ids)
 
-
-
         # keyframe_map = {k.key: k for k in keyframes}
         response = []
 
@@ -82,14 +76,15 @@ class KeyframeQueryService:
                         key=result.id_,
                         video_num=result.video_namespace,
                         group_num=result.parent_namespace,
+                        fps=result.fps,
                         keyframe_num=result.frame_id,
+                        pts_time=result.pts_time,
                         global_index=result.global_index,
                         confidence_score=result.distance,
                         frame_path=result.frame_path,
                     )
                 )
         return response
-    
 
     async def search_by_text(
         self,
@@ -98,7 +93,6 @@ class KeyframeQueryService:
         score_threshold: float | None = 0.5,
     ):
         return await self._search_keyframes(text_embedding, top_k, score_threshold, None)   
-    
 
     async def search_by_text_range(
         self,
@@ -108,15 +102,15 @@ class KeyframeQueryService:
         range_queries: list[tuple[int,int]]
     ):
         """
-        range_queries: a bunch of start end indices, and we just search inside these, ignore everything
+        range_queries: a bunch of start end indices, 
+        and we just search inside these, ignore everything
         """
 
         all_ids = self.keyframe_vector_repo.get_all_id()
         allowed_ids = set()
         for start, end in range_queries:
             allowed_ids.update(range(start, end + 1))
-        
-        
+
         exclude_ids = [id_ for id_ in all_ids if id_ not in allowed_ids]
 
         return await self._search_keyframes(text_embedding, top_k, score_threshold, exclude_ids)   
@@ -129,7 +123,8 @@ class KeyframeQueryService:
         exclude_groups: list[str] | None
     ):
         """
-        range_queries: a bunch of start end indices, and we just search inside these, ignore everything
+        range_queries: a bunch of start end indices,
+        and we just search inside these, ignore everything
         """
         return await self._search_keyframes(
             text_embedding=text_embedding,
@@ -148,7 +143,8 @@ class KeyframeQueryService:
         exclude_ids: list[str] | None
     ):
         """
-        range_queries: a bunch of start end indices, and we just search inside these, ignore everything
+        range_queries: a bunch of start end indices,
+        and we just search inside these, ignore everything
         """
         return await self._search_keyframes(
             text_embedding=text_embedding,
@@ -157,4 +153,4 @@ class KeyframeQueryService:
             include_groups=include_groups,
             include_videos=include_videos,
             exclude_indices=exclude_ids
-        ) 
+        )

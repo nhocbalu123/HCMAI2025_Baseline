@@ -108,7 +108,12 @@ async def search_keyframes(
     logger.info(f"Found {len(results)} results for query: '{request.query}'")
     display_results = list(
         map(
-            lambda pair: SingleKeyframeDisplay(path=pair[0], score=pair[1]),
+            lambda pair: SingleKeyframeDisplay(
+                path=pair[0],
+                score=pair[1],
+                fps=pair[2],
+                pts_time=pair[3]
+            ),
             map(controller.convert_model_to_path, results)
         )
     )
@@ -174,7 +179,12 @@ async def search_keyframes_exclude_groups(
 
     display_results = list(
         map(
-            lambda pair: SingleKeyframeDisplay(path=pair[0], score=pair[1]),
+            lambda pair: SingleKeyframeDisplay(
+                path=pair[0],
+                score=pair[1],
+                fps=pair[2],
+                pts_time=pair[3]
+            ),
             map(controller.convert_model_to_path, results)
         )
     )
@@ -250,7 +260,12 @@ async def search_keyframes_selected_groups_videos(
 
     display_results = list(
         map(
-            lambda pair: SingleKeyframeDisplay(path=pair[0], score=pair[1]),
+            lambda pair: SingleKeyframeDisplay(
+                path=pair[0],
+                score=pair[1],
+                fps=pair[2],
+                pts_time=pair[3]
+            ),
             map(controller.convert_model_to_path, results)
         )
     )
