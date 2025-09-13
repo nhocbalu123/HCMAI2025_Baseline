@@ -35,10 +35,6 @@ class KeyframeVectorRepository(MilvusBaseRepository):
         "video_namespace",
     ]
 
-    SEARCH_PARAMS = {
-        "nprobe": 64
-    }
-
     def __init__(
         self, 
         collection: MilvusCollection,
@@ -76,9 +72,6 @@ class KeyframeVectorRepository(MilvusBaseRepository):
     ):
         expr = self._build_expression(request=request)
 
-        self.search_params["params"].update(
-            KeyframeVectorRepository.SEARCH_PARAMS
-        )
         print("search_by_embedding", self.search_params)
 
         search_results = cast(SearchResult, self.collection.search(

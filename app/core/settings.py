@@ -28,9 +28,9 @@ class KeyFrameIndexMilvusSetting(BaseSettings):
     PORT: int = Field(..., alias="MILVUS_PORT")
     METRIC_TYPE: str = 'COSINE'
     INDEX_TYPE: str = 'IVF_SQ8'
-    BATCH_SIZE: int =10000
-    SEARCH_PARAMS: dict = {}
-    
+    BATCH_SIZE: int = 10000
+    SEARCH_PARAMS: dict = {"nprobe": 64}
+
 class AppSettings(BaseSettings):
     DATA_FOLDER: str  = "/app/data_collection/keyframe"
     ID2INDEX_PATH: str = "/app/data_collection/converter/id2index.json"

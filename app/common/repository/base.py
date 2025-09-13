@@ -50,7 +50,10 @@ class MilvusBaseRepository(ABC):
     ):
         
         self.collection = collection
+        print("---MilvusBaseRepository: Collection Loading....")
         self.collection.load()
+        print("---MilvusBaseRepository: Collection Loaded!!")
+
 
 
 
