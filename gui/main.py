@@ -153,7 +153,7 @@ with col2:
     st.markdown("### 🎛️ Search Mode")
     search_mode = st.selectbox(
         "Mode",
-        options=["Default", "Exclude Groups", "Include Groups & Videos"],
+        options=["Default", "Exclude Groups", "Include Groups & Videos", "Temporal Search with selected videos"],
         help="Choose how to filter your search results"
     )
 
@@ -209,6 +209,60 @@ elif search_mode == "Include Groups & Videos":
         except ValueError:
             st.error("Please enter valid video IDs separated by commas")
 
+# Temporal search
+elif search_mode == "Temporal Search with selected videos":
+    st.markdown("### ✅ Temporal Search with selected videos")
+    
+    col_inc1, col_inc2, col_inc3, col_inc4 = st.columns(4)
+    with col_inc1:
+        include_videos_input = st.text_input(
+            "Video IDs to search",
+            placeholder="e.g., 2, 4, 6",
+            help="Only search within these videos"
+        )
+    
+    with col_inc2:
+        temporal_window_input = st.text_input(
+            "Temporal window - start, end - in seconds",
+            placeholder="e.g., 1000,2000",
+            help="Search within a window of start and end in seconds of a video"
+        )
+    
+    with col_inc3:
+        top_k_weight_input = st.number_input(
+            "Extending top_k result by times",
+            value=2,
+            min_value=2,
+            max_value=10,
+            help="For extending top_k result in search neighbors for temporal score"
+        )
+    
+    with col_inc4:
+        temporal_window_size_input = st.number_input(
+            "window size for a specific frame index",
+            value=1000,
+            min_value=100,
+            max_value=10000,
+            help="window size for searching a specific frame index"
+        )
+    
+    # Parse include groups and videos
+    include_videos = ""
+    temporal_window = ""
+    
+    if temporal_window_input.strip():
+        try:
+            temporal_window = temporal_window_input.strip()
+        except ValueError:
+            st.error("Please enter valid temporal_window_input separated by commas")
+    
+    if include_videos_input.strip():
+        try:
+            include_videos = include_videos_input.strip()
+        except ValueError:
+            st.error("Please enter valid video IDs separated by commas")
+
+
 # Search button and logic
 if st.button("🚀 Search", use_container_width=True):
     if not query.strip():
@@ -235,6 +289,19 @@ if st.button("🚀 Search", use_container_width=True):
                         "score_threshold": score_threshold,
                         "exclude_groups": exclude_groups,
                         "using_translator": use_translator
+                    }
+                
+                elif search_mode == "Temporal Search with selected videos":
+                    endpoint = f"{st.session_state.api_base_url}/api/v1/keyframe/search/temporal_search"
+                    payload = {
+                        "query": query,
+                        "top_k": top_k,
+                        "score_threshold": score_threshold,
+                        "include_videos": include_videos,
+                        "using_translator": use_translator,
+                        "temporal_window": temporal_window,
+                        "top_k_weight": top_k_weight_input,
+                        "temporal_windown_size": temporal_window_size_input
                     }
                 
                 else:  # Include Groups & Videos
