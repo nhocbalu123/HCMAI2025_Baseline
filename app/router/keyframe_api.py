@@ -294,6 +294,7 @@ async def search_keyframes_selected_groups_videos(
     - **score_threshold**: Minimum confidence score
     - **temporal_window**: String of list Temporal Window (start, end) for temporal search
     - **top_k_weight**: Extending top_k by top_k_weight times
+    - **temporal_window_size**: (Optional) window size for searching within a specific keyframe index
     
     **Behavior:**
     - Only keyframes from the specified groups AND videos will be searched
@@ -313,7 +314,8 @@ async def search_keyframes_selected_groups_videos(
         "score_threshold": 0.5,
         "include_videos": 101,102,203,204,
         "temporal_window": 100,200
-        "top_k_weight": 2
+        "top_k_weight": 2,
+        "temporal_window_size": 1000
     }
     ```
     """,
@@ -345,7 +347,8 @@ async def temporal_search(
             request.include_videos
         ),
         temporal_window=temporal_window,
-        top_k_weight=int(request.top_k_weight)
+        top_k_weight=int(request.top_k_weight),
+        temporal_window_size=request.temporal_window_size
     )
 
     logger.info(f"Found {len(results)} results within selected groups/videos")

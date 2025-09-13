@@ -48,3 +48,7 @@ class TemporalSearchRequest(BaseSearchRequest):
         default=2,
         description="Extending top_k by top_k_weight times"
     )
+    temporal_window_size: int = Field(
+        default=1000,
+        description="Window size for searching about a specific keyframe index"
+    )

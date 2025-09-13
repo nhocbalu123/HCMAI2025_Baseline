@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+from typing import Optional, Tuple
 
 import os
 import sys
@@ -112,7 +113,8 @@ class QueryController:
         top_k: int,
         list_of_include_videos: list[str],
         temporal_window: Optional[Tuple[float, float]] = None,
-        top_k_weight: Optional[int] = 2
+        top_k_weight: Optional[int] = 2,
+        temporal_window_size: Optional[int] = 1000,
     ):
         embedding = self.model_service.embedding(query).tolist()
         result = await self.keyframe_service.temporal_search(
@@ -121,7 +123,7 @@ class QueryController:
             include_videos=list_of_include_videos,
             temporal_window=temporal_window,
             top_k_weight=top_k_weight,
+            temporal_window_size=temporal_window_size,
         )
 
         return result
-

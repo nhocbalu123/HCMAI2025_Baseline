@@ -13,7 +13,7 @@ from repository.milvus import MilvusSearchRequest
 from repository.mongo import KeyframeRepository
 from schema.response import KeyframeServiceReponse
 from service.temporal_search_service import TemporalSearchService
-from typing import Optional
+from typing import Optional, Tuple
 
 
 class KeyframeQueryService:
@@ -158,7 +158,10 @@ class KeyframeQueryService:
         include_videos: list[str] | None,
         temporal_window: Optional[Tuple[float, float]] = None,
         top_k_weight: Optional[int] = 2,
+        temporal_window_size: Optional[int] = 1000,
     ):
+        """Temporal search"""
+
         temporal_search = TemporalSearchService(
             keyframe_vector_repo=self.keyframe_vector_repo
         )
@@ -168,7 +171,8 @@ class KeyframeQueryService:
             top_k=top_k,
             temporal_window=temporal_window,
             video_namespaces=include_videos,
-            top_k_weight=top_k_weight
+            top_k_weight=top_k_weight,
+            temporal_window_size=temporal_window_size
         )
 
         return response_result

@@ -36,7 +36,9 @@ class KeyframeVectorRepository(MilvusBaseRepository):
         "video_namespace",
     ]
 
-    STANDARD_FRAME_ID_LEN = 7
+    STANDARD_FRAME_ID_LEN = 6
+
+    MAX_TOP_K = 200
 
     def __init__(
         self, 
@@ -75,12 +77,12 @@ class KeyframeVectorRepository(MilvusBaseRepository):
     ):
         expr = None
 
-        if isinstance(request, MilvusSearchRequest):
-            expr = self._build_expression(request=request)
-        elif isinstance(request, TemporalMilvusSearchRequest):
+        if isinstance(request, TemporalMilvusSearchRequest):
             expr = request.expr
+        elif isinstance(request, MilvusSearchRequest):
+            expr = self._build_expression(request=request)
 
-        print("search_by_embedding", self.search_params)
+        print("search_by_embedding - expr: ", expr)
 
         search_results = cast(SearchResult, self.collection.search(
             data=[request.embedding],
@@ -148,19 +150,40 @@ class KeyframeVectorRepository(MilvusBaseRepository):
         frame_idx = KeyframeVectorRepository.standardize_frame_id_format(
             neighbor_request.frame_id
         )
-        
+
         # Query for neighboring frames
         expr = (
             f'video_namespace == "{neighbor_request.video_namespace}" && '
-            f'frame_id >= {start_idx} && frame_id < {end_idx} && '
+            f'frame_id >= "{start_idx}" && frame_id <= "{end_idx}" && '
             f'frame_id != "{frame_idx}"'
         )
-        
-        results = cast(SearchResult, self.collection.query(
+
+        search_results = cast(SearchResult, self.collection.search(
             data=[neighbor_request.query_embedding],
             anns_field="embedding",
+            param=self.search_params,
+            limit=self.__class__.MAX_TOP_K,
             expr=expr,
-            output_fields=KeyframeVectorRepository.OUTPUT_FIELDS
+            output_fields=KeyframeVectorRepository.OUTPUT_FIELDS,
+            _async=False
         ))
+
+        results = []
+
+        for hits in search_results:
+            for hit in hits:
+                result = MilvusSearchResult(
+                    id_=hit.id,
+                    distance=hit.distance,
+                    embedding=hit.entity.get("embedding", None),
+                    global_index=hit.entity.get("global_index", None),
+                    fps=hit.entity.get("fps", None),
+                    frame_id=hit.entity.get("frame_id", None),
+                    pts_time=hit.entity.get("pts_time", None),
+                    frame_path=hit.entity.get("frame_path", None),
+                    parent_namespace=hit.entity.get("parent_namespace", None),
+                    video_namespace=hit.entity.get("video_namespace", None)
+                )
+                results.append(result)
 
         return results
