@@ -55,7 +55,7 @@ class QueryController:
         result = self.convert_model_to_path(model=model)
         result += (model.temporal_score, model.combined_score)
 
-        return result  
+        return result
 
     async def search_text(
         self, 

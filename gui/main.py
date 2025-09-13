@@ -356,8 +356,13 @@ if st.session_state.search_results:
         max_score = max(result['score'] for result in st.session_state.search_results)
         st.metric("Best Score", f"{max_score:.3f}")
     
+    temporal_search_flag = search_mode == "Temporal Search with selected videos"
+
     # Sort by score (highest first)
-    sorted_results = sorted(st.session_state.search_results, key=lambda x: x['score'], reverse=True)
+    if not temporal_search_flag:
+        sorted_results = sorted(st.session_state.search_results, key=lambda x: x['score'], reverse=True)
+    else:
+        sorted_results = sorted(st.session_state.search_results, key=lambda x: x['pts_time'])
     
     # Display results in a grid
 
@@ -394,6 +399,8 @@ if st.session_state.search_results:
                     <div style="text-align: left; margin-top: 0; margin-bottom: 1em;">
                         <p style="margin-top:0; margin-bottom:0;"><b>Keyframe No.:</b> #{i+1}</p>
                         <p style="margin-top:0; margin-bottom:0;"><b>Score:</b> {result['score']:.3f}</p>
+                        {f'<p style="margin-top:0; margin-bottom:0;"><b>Temporal Score:</b> {result["temporal_score"]:.3f}</p>' if temporal_search_flag and result.get("temporal_score", None) else None}
+                        {f'<p style="margin-top:0; margin-bottom:0;"><b>Combined Score:</b> {result["combined_score"]:.3f}</p>' if temporal_search_flag and result.get("combined_score", None) else None}
                         <p style="margin-top:0; margin-bottom:0;"><b>FPS:</b> {result['fps']}</p>
                         <p style="margin-top:0; margin-bottom:0;"><b>Timestamp (s):</b> {result['pts_time']:.3f}</p>
                         <p style="margin-top:0; margin-bottom:0;"><b>Origin Keyframe:</b> #{get_folder_path(result_path=result['path'])}</p>
