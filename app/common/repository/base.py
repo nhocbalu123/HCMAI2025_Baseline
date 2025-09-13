@@ -50,6 +50,7 @@ class MilvusBaseRepository(ABC):
     ):
         
         self.collection = collection
+        self.collection.load()
 
 
 

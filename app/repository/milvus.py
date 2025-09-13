@@ -27,11 +27,17 @@ class KeyframeVectorRepository(MilvusBaseRepository):
         "id",
         "embedding",
         "global_index",
+        "fps",
         "frame_id",
+        "pts_time",
         "frame_path",
         "parent_namespace",
         "video_namespace",
     ]
+
+    SEARCH_PARAMS = {
+        "nprobe": 64
+    }
 
     def __init__(
         self, 
@@ -70,15 +76,22 @@ class KeyframeVectorRepository(MilvusBaseRepository):
     ):
         expr = self._build_expression(request=request)
 
-        search_results= cast(SearchResult, self.collection.search(
+        self.search_params["params"].update(
+            KeyframeVectorRepository.SEARCH_PARAMS
+        )
+        print("search_by_embedding", self.search_params)
+
+        search_results = cast(SearchResult, self.collection.search(
             data=[request.embedding],
             anns_field="embedding",
             param=self.search_params,
             limit=request.top_k,
-            expr=expr ,
+            expr=expr,
             output_fields=KeyframeVectorRepository.OUTPUT_FIELDS,
             _async=False
         ))
+
+        print("Done search. Preparing results")
 
         results = []
         for hits in search_results:
@@ -97,7 +110,6 @@ class KeyframeVectorRepository(MilvusBaseRepository):
                 )
                 results.append(result)
 
-        
         return MilvusSearchResponse(
             results=results,
             total_found=len(results),

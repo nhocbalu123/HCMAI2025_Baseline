@@ -157,7 +157,7 @@ class MilvusEmbeddingInjector:
             FieldSchema(name="video_namespace", dtype=DataType.VARCHAR, max_length=64),
             FieldSchema(name="fps", dtype=DataType.VARCHAR, max_length=16),
             FieldSchema(name="frame_id", dtype=DataType.VARCHAR, max_length=128),
-            FieldSchema(name="pts_time", dtype=DataType.FLOAT),
+            FieldSchema(name="pts_time", dtype=DataType.DOUBLE),
             FieldSchema(name="frame_path", dtype=DataType.VARCHAR, max_length=1024),
             FieldSchema(name="video_frame_index", dtype=DataType.INT64),
             FieldSchema(name="global_index", dtype=DataType.INT64),
@@ -168,8 +168,17 @@ class MilvusEmbeddingInjector:
         index_params = {
             "metric_type": self.setting.METRIC_TYPE,
             "index_type": self.setting.INDEX_TYPE,
+            "params": {
+                "nlist": min(1024, int(np.sqrt(num_vectors))),  # Adaptive nlist
+            }
         }
         collection.create_index("embedding", index_params)
+
+        # Scalar indexes for filtering performance
+        collection.create_index("parent_namespace", {"index_type": "TRIE"})
+        collection.create_index("video_namespace", {"index_type": "TRIE"})
+        collection.create_index("pts_time", {"index_type": "STL_SORT"})
+        print("✅ All indexes created")
 
         print(f"Inserting {num_vectors} embeddings + metadata in batches of {batch_size}")
 
@@ -223,20 +232,23 @@ class MilvusEmbeddingInjector:
         collection.flush()
         print("✅ Data flushed to disk")
 
-        collection.load()
-        print("✅ Collection loaded for search")
+        # collection.load()
+        # print("✅ Collection loaded for search")
+
+        # Clear batch variables to free memory
+        del metadata
+        del all_ids, all_parent, all_video
+        del all_fps, all_frame_id, all_pts_time
+        del all_frame_path, all_video_index, all_global_index
 
         return collection
-
     
     def get_collection_info(self):
-        
         collection = Collection(self.collection_name, using=self.alias)
         num_entities = collection.num_entities
         print(f"Collection '{self.collection_name}' has {num_entities} entities")
         return num_entities
-      
-    
+
     def disconnect(self):
         if connections.has_connection(self.alias):
             connections.remove_connection(self.alias)
@@ -256,14 +268,14 @@ def inject_embeddings_simple(
         host=setting.HOST,
         port=setting.PORT
     )
-    
 
     injector.inject_embeddings(
         embedding_file_path=embedding_file_path,
         batch_size=setting.BATCH_SIZE
     )
-    count = injector.get_collection_info()
-    print(f"Successfully injected embeddings! Total entities: {count}")
+    print("Successfully injected embeddings!")
+    # count = injector.get_collection_info()
+    # print(f"Successfully injected embeddings! Total entities: {count}")
 
 
 def inject_embeddings_with_cutom_metadata(

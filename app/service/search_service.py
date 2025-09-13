@@ -49,7 +49,7 @@ class KeyframeQueryService:
             include_videos=include_videos,
             exclude_ids=exclude_indices
         )
-
+        print("_search_keyframes")
         search_response = await self.keyframe_vector_repo.search_by_embedding(search_request)
 
         filtered_results = [

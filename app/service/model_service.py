@@ -51,7 +51,7 @@ class ModelService:
                     padding_mask=padding_mask,
                     only_infer=True
                 )
-            
+            print("feature done")
             # Normalize the embedding
             text_feature = text_feature / text_feature.norm(dim=-1, keepdim=True)
             # Convert to numpy and return

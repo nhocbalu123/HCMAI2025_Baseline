@@ -51,6 +51,7 @@ class QueryController:
         top_k: int,
         score_threshold: float
     ):
+        print("---Performing search_text")
         embedding = self.model_service.embedding(query).tolist()
 
         result = await self.keyframe_service.search_by_text(embedding, top_k, score_threshold)

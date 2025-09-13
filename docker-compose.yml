@@ -60,8 +60,8 @@ services:
             # CLOUDFLARE_ACCESS_KEY_ID: "CLOUDFLARE_ACCESS_KEY_ID",
             # CLOUDFLARE_SECRET_KEY: "CLOUDFLARE_SECRET_KEY",
             # BUCKET_NAME: "BUCKET_NAME"
-        mem_limit: 8g
-        memswap_limit: 8g
+        mem_limit: 10g
+        memswap_limit: 10g
         command: ["/app/migration/app_migration.sh"]
         volumes:
             - ./app:/app/app
@@ -69,6 +69,9 @@ services:
             - ./migration_data:/app/migration_data
             - ./hf_cache:/app/hf_cache
             - ./data_collection:/app/data_collection
+        depends_on:
+            milvus:
+                condition: service_healthy
 
     etcd:
         container_name: milvus-etcd
@@ -104,16 +107,30 @@ services:
             - minio_data:/minio_data
         command: server /minio_data --console-address ":9001"
         healthcheck:
-            test:
-                ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-            interval: 30s
-            timeout: 20s
-            retries: 3
+            test: ["CMD", "mc", "ready", "local"]
+            interval: 10s
+            timeout: 10s
+            start_period: 60s
+            retries: 5
+    
+    minio-make-bucket:
+        image: minio/mc
+        depends_on:
+            minio:
+                condition: service_healthy
+        entrypoint: >
+            sh -c "
+                mc alias set local http://minio:9000 minioadmin minioadmin &&
+                until mc mb -p local/milvus; do echo 'Waiting for MinIO...'; sleep 3; done
+            "
 
     milvus:
         container_name: milvus-standalone
         image: milvusdb/milvus:v2.5.14
         command: ["milvus", "run", "standalone"]
+        restart: always
+        mem_limit: 0
+        memswap_limit: -1
         security_opt:
             - seccomp:unconfined
         environment:
@@ -124,6 +141,7 @@ services:
             MINIO_BUCKET_NAME: milvus
             MINIO_USE_SSL: "false"
             MONGO_URI: mongodb://root:example@mongodb:27017
+            CACHE_SIZE: 2GB
         ports:
             - "19530:19530"
             - "9091:9091"
@@ -134,11 +152,16 @@ services:
             interval: 30s
             start_period: 90s
             timeout: 20s
-            retries: 3
+            retries: 5
         depends_on:
-            - etcd
-            - minio
-            - mongodb
+            etcd:
+                condition: service_healthy
+            minio:
+                condition: service_healthy
+            mongodb:
+                condition: service_healthy
+            minio-make-bucket:
+                condition: service_completed_successfully
 
     mongodb:
         container_name: mongodb

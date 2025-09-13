@@ -27,7 +27,7 @@ class KeyFrameIndexMilvusSetting(BaseSettings):
     HOST: str = Field(..., alias="MILVUS_HOST")
     PORT: int = Field(..., alias="MILVUS_PORT")
     METRIC_TYPE: str = 'COSINE'
-    INDEX_TYPE: str = 'FLAT'
+    INDEX_TYPE: str = 'IVF_SQ8'
     BATCH_SIZE: int =10000
     SEARCH_PARAMS: dict = {}
     

@@ -327,6 +327,8 @@ if st.session_state.search_results:
                     <div style="text-align: left; margin-top: 0; margin-bottom: 1em;">
                         <p style="margin-top:0; margin-bottom:0;"><b>Keyframe No.:</b> #{i+1}</p>
                         <p style="margin-top:0; margin-bottom:0;"><b>Score:</b> {result['score']:.3f}</p>
+                        <p style="margin-top:0; margin-bottom:0;"><b>FPS:</b> {result['fps']}</p>
+                        <p style="margin-top:0; margin-bottom:0;"><b>Timestamp (s):</b> {result['pts_time']:.3f}</p>
                         <p style="margin-top:0; margin-bottom:0;"><b>Origin Keyframe:</b> #{get_folder_path(result_path=result['path'])}</p>
                     </div>
                     """
