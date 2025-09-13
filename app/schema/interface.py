@@ -8,14 +8,16 @@ class KeyframeInterface(BaseModel):
     keyframe_num: int = Field(..., description="Keyframe number")
 
 
-
-
 class MilvusSearchRequest(BaseModel):
     embedding: List[float] = Field(..., description="Query embedding vector")
     top_k: int = Field(default=10, ge=1, le=1000, description="Number of top results to return")
     include_groups: Optional[List[str]] = Field(default=None, description="List of group videos IDs for searching in Milvus")
     include_videos: Optional[List[str]] = Field(default=None, description="List of videos IDs for searching in Milvus")
     exclude_ids: Optional[List[str]] = Field(default=None, description="IDs to exclude from search results")
+
+
+class TemporalMilvusSearchRequest(MilvusSearchRequest):
+    expr: Optional[str] = Field(default="", description="Expression for milvus filter")
 
 
 class MilvusSearchResult(BaseModel):
@@ -30,6 +32,8 @@ class MilvusSearchResult(BaseModel):
     frame_path: Optional[str] = Field(default=None, description="Frame path of a keyframe")
     parent_namespace: Optional[str] = Field(default=None, description="The video batch ID")
     video_namespace: Optional[str] = Field(default=None, description="The video ID")
+    temporal_score: Optional[float] = Field(default=None, description="Temporal score in temporal search")
+    combined_score: Optional[float] = Field(default=None, description="Combined score in temporal search")
 
 
 class MilvusSearchResponse(BaseModel):
@@ -39,3 +43,11 @@ class MilvusSearchResponse(BaseModel):
     search_time_ms: Optional[float] = Field(default=None, description="Search execution time in milliseconds")
 
 
+class NeighborSearchRequest(BaseModel):
+    """
+    Search Request for neighboring_frames_search
+    """
+    video_namespace: str = Field(..., description="The video ID")
+    frame_id: str = Field(..., description="Original frame id of video")
+    query_embedding: List[float] = Field(..., description="Query embedding vector")
+    window_size: int = Field(..., description="Window size for search within frame_id")

@@ -40,3 +40,7 @@ class AppSettings(BaseSettings):
 
 class ImageSettings(BaseSettings):
     BASE_URL: str = "https://pub-6dc786c2b53e460d9ef9948fd14a8a9a.r2.dev"
+
+
+class TemporalSettings(BaseSettings):
+    TEMPORAL_WEIGHT: float = 0.3

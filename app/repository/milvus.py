@@ -18,7 +18,8 @@ from typing import cast
 from common.repository import MilvusBaseRepository
 from pymilvus import Collection as MilvusCollection
 from pymilvus.client.search_result import SearchResult
-from schema.interface import  MilvusSearchRequest, MilvusSearchResult, MilvusSearchResponse
+from schema.interface import  MilvusSearchRequest, MilvusSearchResult, MilvusSearchResponse,\
+    NeighborSearchRequest, TemporalMilvusSearchRequest
 
 
 class KeyframeVectorRepository(MilvusBaseRepository):
@@ -34,6 +35,8 @@ class KeyframeVectorRepository(MilvusBaseRepository):
         "parent_namespace",
         "video_namespace",
     ]
+
+    STANDARD_FRAME_ID_LEN = 7
 
     def __init__(
         self, 
@@ -68,9 +71,14 @@ class KeyframeVectorRepository(MilvusBaseRepository):
 
     async def search_by_embedding(
         self,
-        request: MilvusSearchRequest
+        request: MilvusSearchRequest | TemporalMilvusSearchRequest
     ):
-        expr = self._build_expression(request=request)
+        expr = None
+
+        if isinstance(request, MilvusSearchRequest):
+            expr = self._build_expression(request=request)
+        elif isinstance(request, TemporalMilvusSearchRequest):
+            expr = request.expr
 
         print("search_by_embedding", self.search_params)
 
@@ -79,7 +87,7 @@ class KeyframeVectorRepository(MilvusBaseRepository):
             anns_field="embedding",
             param=self.search_params,
             limit=request.top_k,
-            expr=expr,
+            expr=expr if expr else None,
             output_fields=KeyframeVectorRepository.OUTPUT_FIELDS,
             _async=False
         ))
@@ -107,6 +115,52 @@ class KeyframeVectorRepository(MilvusBaseRepository):
             results=results,
             total_found=len(results),
         )
-    
+
     def get_all_id(self) -> list[int]:
         return list(range(self.collection.num_entities))
+
+    @staticmethod
+    def standardize_frame_id_format(value_like_frame_id: str | int) -> str:
+        """
+        Format value like frame ID format into same format
+        for lexicographic comparison
+        """
+        return str(value_like_frame_id).zfill(
+            KeyframeVectorRepository.STANDARD_FRAME_ID_LEN
+        )
+
+    async def neighboring_frames_search(
+        self,
+        neighbor_request: NeighborSearchRequest
+    ):
+        """
+        Neighboring frames search for temporal search
+        """
+        # Calculate frame index range
+        start_idx = max(
+            0,
+            int(neighbor_request.frame_id) - neighbor_request.window_size
+        )
+        end_idx = int(neighbor_request.frame_id) + neighbor_request.window_size + 1
+        
+        start_idx = KeyframeVectorRepository.standardize_frame_id_format(start_idx)
+        end_idx = KeyframeVectorRepository.standardize_frame_id_format(end_idx)
+        frame_idx = KeyframeVectorRepository.standardize_frame_id_format(
+            neighbor_request.frame_id
+        )
+        
+        # Query for neighboring frames
+        expr = (
+            f'video_namespace == "{neighbor_request.video_namespace}" && '
+            f'frame_id >= {start_idx} && frame_id < {end_idx} && '
+            f'frame_id != "{frame_idx}"'
+        )
+        
+        results = cast(SearchResult, self.collection.query(
+            data=[neighbor_request.query_embedding],
+            anns_field="embedding",
+            expr=expr,
+            output_fields=KeyframeVectorRepository.OUTPUT_FIELDS
+        ))
+
+        return results

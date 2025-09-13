@@ -7,8 +7,14 @@ from schema.request import (
     TextSearchRequest,
     TextSearchWithExcludeGroupsRequest,
     TextSearchWithSelectedGroupsAndVideosRequest,
+    TemporalSearchRequest
 )
-from schema.response import KeyframeServiceReponse, SingleKeyframeDisplay, KeyframeDisplay
+from schema.response import (
+    KeyframeServiceReponse,
+    SingleKeyframeDisplay,
+    TemporalKeyframeDisplay,
+    KeyframeDisplay
+)
 from controller.query_controller import QueryController
 from core.dependencies import get_query_controller, get_translator_service
 from core.logger import SimpleLogger
@@ -267,6 +273,95 @@ async def search_keyframes_selected_groups_videos(
                 pts_time=pair[3]
             ),
             map(controller.convert_model_to_path, results)
+        )
+    )
+    return KeyframeDisplay(results=display_results)
+
+
+@router.post(
+    "/search/temporal_search",
+    response_model=KeyframeDisplay,
+    summary="Text search with temporal search",
+    description="""
+    Perform text-based search for keyframes within specific groups and videos only.
+    
+    This endpoint allows you to limit your search to specific groups and videos,
+    effectively creating a filtered search scope.
+    
+    **Parameters:**
+    - **query**: The search text
+    - **top_k**: Maximum number of results to return
+    - **score_threshold**: Minimum confidence score
+    - **temporal_window**: String of list Temporal Window (start, end) for temporal search
+    - **top_k_weight**: Extending top_k by top_k_weight times
+    
+    **Behavior:**
+    - Only keyframes from the specified groups AND videos will be searched
+    - If a keyframe belongs to an included group OR an included video, it will be considered
+    - Empty lists mean no filtering for that category
+    
+    **Use Cases:**
+    - Search within specific video collections
+    - Focus on particular time periods or datasets
+    - Limit search to curated content sets
+    
+    **Example:**
+    ```json
+    {
+        "query": "car driving on highway",
+        "top_k": 20,
+        "score_threshold": 0.5,
+        "include_videos": 101,102,203,204,
+        "temporal_window": 100,200
+        "top_k_weight": 2
+    }
+    ```
+    """,
+    response_description="List of matching keyframes from temporal search"
+)
+async def temporal_search(
+    request: TemporalSearchRequest,
+    controller: QueryController = Depends(get_query_controller),
+    translator: TranslatorService | None = Depends(get_translator_service)
+):
+    """
+    Temporal search for a specific temporal window (start, end in seconds)
+    """
+
+    logger.info(f"Text search with selection: query='{request.query}', include_videos={request.include_videos}, temporal window={request.temporal_window}")
+
+    query = compose_input_query(translator=translator, request=request)
+
+    if request.temporal_window:
+        temporal_window = convert_string_as_list_to_list(
+            request.temporal_window
+        )
+        temporal_window = tuple([float(val) for val in temporal_window])
+
+    results = await controller.temporal_search(
+        query=query,
+        top_k=request.top_k,
+        list_of_include_videos=convert_string_as_list_to_list(
+            request.include_videos
+        ),
+        temporal_window=temporal_window,
+        top_k_weight=int(request.top_k_weight)
+    )
+
+    logger.info(f"Found {len(results)} results within selected groups/videos")
+
+    display_results = list(
+        map(
+            lambda pair: TemporalKeyframeDisplay(
+                path=pair[0],
+                score=pair[1],
+                fps=pair[2],
+                pts_time=pair[3],
+                temporal_score=pair[4],
+                combined_score=pair[5]
+
+            ),
+            map(controller.convert_temporal_response_to_display, results)
         )
     )
     return KeyframeDisplay(results=display_results)

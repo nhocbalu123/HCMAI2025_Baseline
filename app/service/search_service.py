@@ -12,6 +12,8 @@ from repository.milvus import KeyframeVectorRepository
 from repository.milvus import MilvusSearchRequest
 from repository.mongo import KeyframeRepository
 from schema.response import KeyframeServiceReponse
+from service.temporal_search_service import TemporalSearchService
+from typing import Optional
 
 
 class KeyframeQueryService:
@@ -24,14 +26,14 @@ class KeyframeQueryService:
         self.keyframe_mongo_repo= keyframe_mongo_repo
 
 
-    async def _retrieve_keyframes(self, ids: list[int]):
-        keyframes = await self.keyframe_mongo_repo.get_keyframe_by_list_of_keys(ids)
+    # async def _retrieve_keyframes(self, ids: list[int]):
+    #     keyframes = await self.keyframe_mongo_repo.get_keyframe_by_list_of_keys(ids)
 
-        keyframe_map = {k.key: k for k in keyframes}
-        return_keyframe = [
-            keyframe_map[k] for k in ids
-        ]   
-        return return_keyframe
+    #     keyframe_map = {k.key: k for k in keyframes}
+    #     return_keyframe = [
+    #         keyframe_map[k] for k in ids
+    #     ]   
+    #     return return_keyframe
 
     async def _search_keyframes(
         self,
@@ -51,25 +53,19 @@ class KeyframeQueryService:
         )
         print("_search_keyframes")
         search_response = await self.keyframe_vector_repo.search_by_embedding(search_request)
-
+        print("score_threshold:", score_threshold)
         filtered_results = [
             result for result in search_response.results
-            if score_threshold is None or result.distance > score_threshold
+            if score_threshold is None or (result.distance) > score_threshold  # important change. could affect search result
         ]
 
         sorted_results = sorted(
             filtered_results, key=lambda r: r.distance, reverse=True
         )
 
-        # sorted_ids = [result.id_ for result in sorted_results]
-
-        # keyframes = await self._retrieve_keyframes(sorted_ids)
-
-        # keyframe_map = {k.key: k for k in keyframes}
         response = []
 
         for result in sorted_results:
-            # keyframe = keyframe_map.get(result.id_)
             if result.frame_id is not None:
                 response.append(
                     KeyframeServiceReponse(
@@ -154,3 +150,26 @@ class KeyframeQueryService:
             include_videos=include_videos,
             exclude_indices=exclude_ids
         )
+
+    async def temporal_search(
+        self,
+        text_embedding: list[float],
+        top_k: int,
+        include_videos: list[str] | None,
+        temporal_window: Optional[Tuple[float, float]] = None,
+        top_k_weight: Optional[int] = 2,
+    ):
+        temporal_search = TemporalSearchService(
+            keyframe_vector_repo=self.keyframe_vector_repo
+        )
+
+        response_result = await temporal_search.search(
+            query_embedding=text_embedding, 
+            top_k=top_k,
+            temporal_window=temporal_window,
+            video_namespaces=include_videos,
+            top_k_weight=top_k_weight
+        )
+
+        return response_result
+

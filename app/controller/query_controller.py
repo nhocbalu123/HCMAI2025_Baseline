@@ -33,7 +33,7 @@ class QueryController:
     def convert_model_to_path(
         self,
         model: KeyframeServiceReponse
-    ) -> tuple[str, float]:
+    ):
         # return os.path.join(self.data_folder, f"L{model.group_num:02d}/V{model.video_num:03d}/{model.keyframe_num:08d}.webp"), model.confidence_score
         file_path = os.path.join(self.data_folder, f"{model.group_num}/{model.video_num}/{model.keyframe_num}.webp")
         result = (
@@ -43,8 +43,19 @@ class QueryController:
             model.pts_time
         )
         return result
-    
-        
+
+    def convert_temporal_response_to_display(
+        self,
+        model: KeyframeServiceReponse
+    ):
+        """
+        Convert the model to display
+        """
+        result = self.convert_model_to_path(model=model)
+        result += (model.temporal_score, model.combined_score)
+
+        return result  
+
     async def search_text(
         self, 
         query: str,
@@ -91,10 +102,26 @@ class QueryController:
             include_groups=list_of_include_groups,
             include_videos=list_of_include_videos,
             exclude_ids=None
-            
+
         )
         return result
-    
 
-        
+    async def temporal_search(
+        self,
+        query: str,
+        top_k: int,
+        list_of_include_videos: list[str],
+        temporal_window: Optional[Tuple[float, float]] = None,
+        top_k_weight: Optional[int] = 2
+    ):
+        embedding = self.model_service.embedding(query).tolist()
+        result = await self.keyframe_service.temporal_search(
+            text_embedding=embedding,
+            top_k=top_k,
+            include_videos=list_of_include_videos,
+            temporal_window=temporal_window,
+            top_k_weight=top_k_weight,
+        )
+
+        return result
 
