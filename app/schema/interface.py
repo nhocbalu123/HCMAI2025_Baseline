@@ -8,8 +8,6 @@ class KeyframeInterface(BaseModel):
     keyframe_num: int = Field(..., description="Keyframe number")
 
 
-
-
 class MilvusSearchRequest(BaseModel):
     embedding: List[float] = Field(..., description="Query embedding vector")
     top_k: int = Field(default=10, ge=1, le=1000, description="Number of top results to return")
@@ -18,16 +16,24 @@ class MilvusSearchRequest(BaseModel):
     exclude_ids: Optional[List[str]] = Field(default=None, description="IDs to exclude from search results")
 
 
+class TemporalMilvusSearchRequest(MilvusSearchRequest):
+    expr: Optional[str] = Field(default="", description="Expression for milvus filter")
+
+
 class MilvusSearchResult(BaseModel):
     """Individual search result"""
     id_: int = Field(..., description="Primary key of the result")
     distance: float = Field(..., description="Distance/similarity score")
     embedding: Optional[List[float]] = Field(default=None, description="Original embedding vector")
     global_index: Optional[int] = Field(default=None, description="Global index of embedding, it should be matched with id")
+    fps: Optional[str] = Field(default=None, description="Video FPS")
     frame_id: Optional[str] = Field(default=None, description="Original frame id of video")
+    pts_time: Optional[float] = Field(default=None, description="Timestamp in second of a keyframe")
     frame_path: Optional[str] = Field(default=None, description="Frame path of a keyframe")
     parent_namespace: Optional[str] = Field(default=None, description="The video batch ID")
     video_namespace: Optional[str] = Field(default=None, description="The video ID")
+    temporal_score: Optional[float] = Field(default=None, description="Temporal score in temporal search")
+    combined_score: Optional[float] = Field(default=None, description="Combined score in temporal search")
 
 
 class MilvusSearchResponse(BaseModel):
@@ -37,3 +43,11 @@ class MilvusSearchResponse(BaseModel):
     search_time_ms: Optional[float] = Field(default=None, description="Search execution time in milliseconds")
 
 
+class NeighborSearchRequest(BaseModel):
+    """
+    Search Request for neighboring_frames_search
+    """
+    video_namespace: str = Field(..., description="The video ID")
+    frame_id: str = Field(..., description="Original frame id of video")
+    query_embedding: List[float] = Field(..., description="Query embedding vector")
+    window_size: int = Field(..., description="Window size for search within frame_id")
