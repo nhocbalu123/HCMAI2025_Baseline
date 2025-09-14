@@ -50,9 +50,17 @@ class MilvusBaseRepository(ABC):
     ):
         
         self.collection = collection
+        print("---MilvusBaseRepository: Collection Loading....")
+        self.collection.load()
+        print("---MilvusBaseRepository: Collection Loaded!!")
 
-
-
+    def release_memory(self):
+        try:
+            print("---MilvusBaseRepository: Releasing memory...")
+            self.collection.release()
+            print("---MilvusBaseRepository: Memory released!")
+        except Exception as e:
+            print(f"Error releasing memory: {e}")
 
     
         
