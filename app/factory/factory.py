@@ -141,15 +141,6 @@ class ServiceFactory:
         collection = MilvusCollection(collection_name, using=alias)
 
         return KeyframeVectorRepository(collection=collection, search_params=search_params)
-    
-    def _remove_hf_cache_locked(self):
-        """Remove HuggingFace cache locks if they exist"""
-        cache_path = Path(os.getenv("HF_HOME", "~/.cache/huggingface"))
-        locks_dir = cache_path / ".locks"
-        if locks_dir.exists():
-            print("Removing .locks directory...")
-            shutil.rmtree(locks_dir)
-            print("✓ Removed lock files")
 
     def _init_beit3_model_service(self, model_name: str = "beit3_large_patch16_384_retrieval"):
         """Refined version of your method"""

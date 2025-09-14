@@ -95,6 +95,10 @@ async def lifespan(app: FastAPI):
         if mongo_client:
             mongo_client.close()
             logger.info("MongoDB connection closed")
+
+        if app.state.service_factory:
+            app.state.service_factory._milvus_keyframe_repo.release_memory()
+            logger.info("Milvus Repo collection released")
             
         logger.info("Application shutdown completed successfully")
         

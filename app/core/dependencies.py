@@ -68,7 +68,7 @@ def get_service_factory(request: Request) -> ServiceFactory:
     if service_factory is None:
         logger.error("ServiceFactory not found in app state")
         raise HTTPException(
-            status_code=503, 
+            status_code=503,
             detail="Service factory not initialized. Please check application startup."
         )
     return service_factory

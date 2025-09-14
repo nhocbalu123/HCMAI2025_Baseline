@@ -27,10 +27,10 @@ class KeyFrameIndexMilvusSetting(BaseSettings):
     HOST: str = Field(..., alias="MILVUS_HOST")
     PORT: int = Field(..., alias="MILVUS_PORT")
     METRIC_TYPE: str = 'COSINE'
-    INDEX_TYPE: str = 'FLAT'
-    BATCH_SIZE: int =10000
-    SEARCH_PARAMS: dict = {}
-    
+    INDEX_TYPE: str = 'IVF_SQ8'
+    BATCH_SIZE: int = 10000
+    SEARCH_PARAMS: dict = {"nprobe": 64}
+
 class AppSettings(BaseSettings):
     DATA_FOLDER: str  = "/app/data_collection/keyframe"
     ID2INDEX_PATH: str = "/app/data_collection/converter/id2index.json"
@@ -40,3 +40,7 @@ class AppSettings(BaseSettings):
 
 class ImageSettings(BaseSettings):
     BASE_URL: str = "https://pub-6dc786c2b53e460d9ef9948fd14a8a9a.r2.dev"
+
+
+class TemporalSettings(BaseSettings):
+    TEMPORAL_WEIGHT: float = 0.3
